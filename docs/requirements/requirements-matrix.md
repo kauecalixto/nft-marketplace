@@ -11,7 +11,7 @@ Estados: IMPLEMENTADO / PARCIAL / NÃO IMPLEMENTADO, avaliados por leitura de c�
 | REQ-05 | Confirmação: resultado, transação, itens, taxas, total | §3 | Compra | src/purchase/OrderPage.tsx | purchase.spec (compra completa) | IMPLEMENTADO | tx-hash, itens, totais |
 | REQ-06 | Login com validação e retorno ao fluxo anterior | §3 | Conta (apoio) | src/account/AuthPages.tsx, guard.ts | account.spec | IMPLEMENTADO | redirect + expired |
 | REQ-07 | Cadastro com validação e conflito | §3 | Conta | AuthPages.tsx | account.spec (conflito) | IMPLEMENTADO | 409 EMAIL_CONFLICT |
-| REQ-08 | Perfil: dados, avatar, senha | §3 | Conta | PrivatePages.tsx | account.spec | PARCIAL | avatar só por URL; sem upload |
+| REQ-08 | Perfil: dados, avatar, senha | §3 | Conta | PrivatePages.tsx, AvatarUpload.tsx | account.spec, avatar-wallet-expiry.spec | IMPLEMENTADO | avatar por upload de arquivo (FileReader, data URL, limite 1 MB) além de URL; senha testada em account.spec |
 | REQ-09 | Carteiras principal/secundária, edição | §3 | Conta | PrivatePages.tsx | account.spec, wallet-edit.spec | IMPLEMENTADO | limite 2, role, edição de carteira |
 | REQ-10 | Mobile para perfil, carteiras, confirmação; desktop/mobile geral | §3, §8 | Todos | src/index.css, PrivatePages.tsx, OrderPage.tsx | responsive.spec (390/768/1440: carrinho, checkout, pedido, perfil, carteiras), catalog.spec | IMPLEMENTADO | overflow corrigido em /wallets e /orders/:id; fidelidade ao Figma não verificada |
 | REQ-11 | Ações fora de escopo não aparentam sucesso | §3 | Todos | - | - | NÃO IMPLEMENTADO | não verificado/sem links auxiliares |
@@ -24,18 +24,18 @@ Estados: IMPLEMENTADO / PARCIAL / NÃO IMPLEMENTADO, avaliados por leitura de c�
 | REQ-18 | Carrinho persiste após refresh e mescla visitante ao autenticar | §3 | Compra | mocks/purchase.ts `owner()` | purchase.spec (refresh), cart-merge.spec | IMPLEMENTADO | refresh e merge de visitante no login testados |
 | REQ-19 | Aplicar/remover cupom; inválido/expirado | §3 | Compra | CartPage, mocks/purchase.ts | purchase.spec | IMPLEMENTADO | KURIO10/KURIO5 |
 | REQ-20 | Subtotal, desconto, taxa, total coerentes com API | §3 | Compra | QuoteSummary, buildQuote | purchase.spec, eth.test | IMPLEMENTADO | BigInt |
-| REQ-21 | Refletir mudanças de preço/disponibilidade com carrinho aberto | §3, §7 | Compra | RealtimeBridge, CartPage | realtime.spec (só detalhe) | PARCIAL | invalida cart/quote; aviso no carrinho sem teste |
-| REQ-22 | ETH como string decimal; qtd inteira; cotação como referência | §3 | Compra | purchase/eth.ts | tests/unit/eth.test.mjs | IMPLEMENTADO | teste unitário (sem script npm) |
+| REQ-21 | Refletir mudanças de preço/disponibilidade com carrinho aberto | §3, §7 | Compra | RealtimeBridge, CartPage | realtime-orders.spec, realtime-checkout.spec | IMPLEMENTADO | invalida cart/quote; aviso no carrinho testado ("nft.updated com NFT no carrinho") |
+| REQ-22 | ETH como string decimal; qtd inteira; cotação como referência | §3 | Compra | purchase/eth.ts | tests/unit/eth.test.mjs | IMPLEMENTADO | teste unitário via `npm run test:unit` |
 | REQ-23 | Validar campos; revisar antes de enviar | §3 | Compra | CheckoutPage | purchase.spec | IMPLEMENTADO | validate() |
-| REQ-24 | Carteiras cadastradas, rede, simulação de conexão/recusa/desconexão | §3 | Compra | CheckoutPage | purchase.spec (wallet-rejected) | PARCIAL | recusa sim; sem conexão/desconexão |
+| REQ-24 | Carteiras cadastradas, rede, simulação de conexão/recusa/desconexão | §3 | Compra | CheckoutPage | purchase.spec (wallet-rejected), avatar-wallet-expiry.spec | IMPLEMENTADO | botões `connect-wallet`/`disconnect-wallet` (desconectar bloqueia a revisão), recusa `wallet-rejected` |
 | REQ-25 | Revalidar cotação; mudança exige nova confirmação | §3 | Compra | CheckoutPage (QUOTE_STALE) | purchase.spec | IMPLEMENTADO | teste de cotação alterada |
 | REQ-26 | Sem pedidos duplicados (clique/timeout) | §3 | Compra | CheckoutPage (busy, idemKey) | purchase.spec | IMPLEMENTADO | duplo clique, timeout |
-| REQ-27 | Pedido pendente/confirmado/recusado; recuperação após refresh/reconexão | §3 | Compra | OrderPage, orderQuery | purchase.spec (pendente) | PARCIAL | polling 1 s; recuperação após refresh sem teste explícito |
+| REQ-27 | Pedido pendente/confirmado/recusado; recuperação após refresh/reconexão | §3 | Compra | OrderPage, orderQuery | purchase.spec (pendente), realtime-orders.spec | IMPLEMENTADO | polling 1 s; "refresh com pedido pendente recupera o mesmo pedido" testado |
 | REQ-28 | Confirmação só para pedido confirmado | §3 | Compra | OrderPage | purchase.spec | IMPLEMENTADO | |
 | REQ-29 | Preservar itens em falha; remover só comprados | §3 | Compra | settle() | purchase.spec (recusado) | IMPLEMENTADO | |
 | REQ-30 | Recibo é snapshot imutável | §3 | Compra | Order.items copiados | - | PARCIAL | snapshot no mock; sem teste de alteração posterior |
 | REQ-31 | Sessão: cadastro, login, logout; rotas privadas | §3 | Conta | session.tsx, guard.ts | account.spec | IMPLEMENTADO | |
-| REQ-32 | Sessão após refresh; expiração na navegação e checkout | §3 | Conta | api.ts interceptor | account.spec (navegação) | PARCIAL | checkout: contexto do formulário não preservado |
+| REQ-32 | Sessão após refresh; expiração na navegação e checkout | §3 | Conta | api.ts interceptor | account.spec (navegação), avatar-wallet-expiry.spec (checkout) | IMPLEMENTADO | teste "sessão expirada no checkout preserva o formulário e não duplica o pedido"; não reexecutado individualmente nesta revisão |
 | REQ-33 | Logout/troca de usuário limpam cache e subscriptions | §3 | Conta | startSession, logout, client.ts | account.spec (isolamento) | PARCIAL | cache limpo; socket na mesma aba sem teste |
 | REQ-34 | Validar formulários (cadastro, perfil, senha, carteiras) incl. erros da API | §3 | Conta | Field.tsx, handlers | account.spec | IMPLEMENTADO | 422 |
 | REQ-35 | Senha não armazenada em claro; credenciais fictícias | §3 | Conta | mocks/account.ts | - | IMPLEMENTADO | SHA-256 + salt; sem teste |
@@ -48,7 +48,7 @@ Estados: IMPLEMENTADO / PARCIAL / NÃO IMPLEMENTADO, avaliados por leitura de c�
 | REQ-42 | Rotas inexistentes e acesso direto | §4 | Todos | app.tsx | not-found.spec | IMPLEMENTADO | notFound testado |
 | REQ-43 | Otimista com rollback | §4 | Compra/Catálogo | useChangeQuantity, FavoriteButton | purchase.spec, account.spec | IMPLEMENTADO | |
 | REQ-44 | Política de cache/retry documentada | §4 | Todos | src/queryClient.ts, ARCHITECTURE.md | - | IMPLEMENTADO | staleTime 30 s, gcTime 5 min, refetchOnWindowFocus, retry 1x só rede/5xx, mutations sem retry; sem teste automatizado da política |
-| REQ-45 | Contratos REST mínimos | §5 | Todos | src/mocks/*, docs/CONTRACTS.md | e2e | PARCIAL | `/nfts` paginado `{items,total,page,pageSize}` com filtros/ordem; avatar sem upload |
+| REQ-45 | Contratos REST mínimos | §5 | Todos | src/mocks/*, docs/CONTRACTS.md | e2e | IMPLEMENTADO | `/nfts` paginado `{items,total,page,pageSize}` com filtros/ordem; avatar por data URL no mock |
 | REQ-46 | Erros: validação, sessão, permissão, inexistente, conflito, transitório | §5 | Todos | handlers | e2e | IMPLEMENTADO | 422/401/403/404/409/503 |
 | REQ-47 | Idempotência de pedidos (mesma chave recupera; conteúdo diferente = conflito) | §5 | Compra | POST /orders | purchase.spec | IMPLEMENTADO | |
 | REQ-48 | MSW na camada de rede; sem mocks em componentes | §6 | Mocks | src/mocks | - | IMPLEMENTADO | `VITE_ENABLE_MOCKS` |
@@ -58,7 +58,7 @@ Estados: IMPLEMENTADO / PARCIAL / NÃO IMPLEMENTADO, avaliados por leitura de c�
 | REQ-52 | Socket.IO via MSW (socket.io-binding), transporte documentado | §6 | Mocks | mocks/socket.ts, ARCHITECTURE.md | realtime.spec | IMPLEMENTADO | |
 | REQ-53 | Cenários exercitam socket.io-client | §6 | Realtime | realtime/client.ts | realtime.spec | IMPLEMENTADO | |
 | REQ-54 | Mocks ativados por config e no build de demonstração | §6 | Mocks | main.tsx, .env.demo | playwright usa build:demo | IMPLEMENTADO | |
-| REQ-55 | Evento `nft.updated` atualiza catálogo, detalhe, carrinho | §7 | Realtime | client.ts | realtime.spec (detalhe) | PARCIAL | invalida os três; só detalhe testado |
+| REQ-55 | Evento `nft.updated` atualiza catálogo, detalhe, carrinho | §7 | Realtime | client.ts | realtime.spec (detalhe), realtime-orders.spec (carrinho) | IMPLEMENTADO | invalida os três; detalhe e carrinho testados; catálogo sem teste dedicado |
 | REQ-56 | Evento `order.updated` atualiza pedido e mostra confirmação/recusa | §7 | Realtime | client.ts, OrderPage | realtime-orders.spec | IMPLEMENTADO | testes e2e de `order.updated` |
 | REQ-57 | Eventos com id, recurso, versão; tolera duplicata/antigo | §7 | Realtime | client.ts `fresh()` | realtime.spec | IMPLEMENTADO | |
 | REQ-58 | Reconexão reconcilia com REST | §7 | Realtime | client.ts | realtime.spec | IMPLEMENTADO | |
@@ -66,19 +66,19 @@ Estados: IMPLEMENTADO / PARCIAL / NÃO IMPLEMENTADO, avaliados por leitura de c�
 | REQ-60 | Cenário: preço muda -> UI informa, atualiza resumo, checkout barra cotação antiga | §7 | Realtime | CartPage, CheckoutPage | realtime-checkout.spec, realtime-orders.spec | IMPLEMENTADO | ponta a ponta via socket no checkout (ver execução) |
 | REQ-61 | Interrupção com pedido pendente; retomada sem nova compra | §7 | Realtime | OrderPage, orderQuery | realtime-orders.spec, realtime-checkout.spec | IMPLEMENTADO | desconexão + pendente + um único pedido |
 | REQ-62 | Skeletons com shimmer; prefers-reduced-motion | §8 | UI | HomePage, NftDetailPage, CartPage, index.css | states.spec | PARCIAL | skeleton+shimmer e `prefers-reduced-motion` em catálogo, detalhe e resumo do carrinho; outras telas sem skeleton |
-| REQ-63 | shadcn/ui e fidelidade ao Figma; 390/768/1440 | §8 | UI | src/components/ui (button, input, label, dialog) | responsive.spec, visual-regression.spec | PARCIAL | shadcn/ui em login, cadastro, carrinho e checkout; perfil, carteiras e catálogo sem shadcn; Figma sem acesso (NÃO IMPLEMENTADO) |
+| REQ-63 | shadcn/ui e fidelidade ao Figma; 390/768/1440 | §8 | UI | src/components/ui (button, input, label, dialog, badge, skeleton) | responsive.spec, visual-regression.spec | PARCIAL | shadcn/ui em AuthPages, PrivatePages, HomePage, NftDetailPage, CartPage, CheckoutPage e OrderPage (cobertura total não auditada); Figma sem acesso (NÃO IMPLEMENTADO) |
 | REQ-64 | Teclado, foco visível, foco em diálogos | §8 | UI | CheckoutPage dialog (onCloseAutoFocus) | a11y-keyboard.spec | IMPLEMENTADO | trap de foco, Esc e retorno ao botão `review-order` testados |
 | REQ-65 | Semântica, labels, erros associados | §8 | UI | Field.tsx, app.tsx (`<main>`) | account.spec, a11y-keyboard.spec | PARCIAL | login, cadastro, perfil, senha e carteiras testados; demais telas sem auditoria axe |
-| REQ-66 | Alt de imagens, contraste, não só cor, feedback acessível | §8 | UI | role=status/alert | - | PARCIAL | live regions; imagens do carrinho com alt vazio |
+| REQ-66 | Alt de imagens, contraste, não só cor, feedback acessível | §8 | UI | role=status/alert, CartPage `alt={i.name}` | avatar-wallet-expiry.spec (alt do carrinho) | PARCIAL | live regions; alt do carrinho corrigido e testado; contraste/axe não auditados; `alt=""` só nas miniaturas decorativas da galeria |
 | REQ-67 | Sem overflow horizontal / zoom | §8 | UI | PrivatePages.tsx, OrderPage.tsx | responsive.spec, catalog.spec | PARCIAL | overflow testado em carrinho, checkout, pedido, perfil, carteiras, `/`, detalhe; zoom não verificado |
 | REQ-68 | E2E 1: busca, filtros, ordenação, paginação, histórico | §9 | Catálogo | catalog.spec | catalog.spec | IMPLEMENTADO | filtros combinados, ordenação, paginação, reload, goBack, fora de ordem |
 | REQ-69 | E2E 2: detalhe direto e inexistente | §9 | Catálogo | quantity-limit.spec | quantity-limit.spec | IMPLEMENTADO | |
 | REQ-70 | E2E 3: cadastro, login, expiração, logout, troca de usuário | §9 | Conta | account.spec | account.spec | IMPLEMENTADO | |
 | REQ-71 | E2E 4: favoritos com falha | §9 | Catálogo | account.spec | account.spec | IMPLEMENTADO | |
-| REQ-72 | E2E 5: carrinho/cupom/persistência | §9 | Compra | purchase.spec | purchase.spec | IMPLEMENTADO | persistência no login sem teste |
+| REQ-72 | E2E 5: carrinho/cupom/persistência | §9 | Compra | purchase.spec | purchase.spec | IMPLEMENTADO | persistência no login coberta por cart-merge.spec |
 | REQ-73 | E2E 6: compra completa | §9 | Compra | purchase.spec | purchase.spec | IMPLEMENTADO | |
 | REQ-74 | E2E 7: falha, clique repetido, timeout | §9 | Compra | purchase.spec | purchase.spec | IMPLEMENTADO | |
-| REQ-75 | E2E 8: perfil, avatar, senha, carteiras | §9 | Conta | account.spec | account.spec | PARCIAL | um teste conjunto; avatar/senha não confirmados individualmente |
+| REQ-75 | E2E 8: perfil, avatar, senha, carteiras | §9 | Conta | account.spec | account.spec | PARCIAL | avatar (upload, preview, erro) tem testes próprios em avatar-wallet-expiry.spec; senha só dentro do teste conjunto de account.spec |
 | REQ-76 | E2E 9: preço via Socket.IO no checkout | §9 | Realtime | realtime-checkout.spec | realtime-checkout.spec | IMPLEMENTADO | checkout com diálogo aberto |
 | REQ-77 | E2E 10: duplicados/antigos, desconexão, pedido pendente | §9 | Realtime | realtime.spec | realtime.spec, realtime-orders.spec, realtime-checkout.spec | IMPLEMENTADO | |
 | REQ-78 | E2E 11: teclado, foco de diálogos, validação | §9 | UI | CheckoutPage | a11y-keyboard.spec, purchase.spec | IMPLEMENTADO | Tab, foco visível, trap, Esc, retorno de foco |

@@ -46,13 +46,10 @@ Com a app aberta (`npm run dev`), execute no console o `scenario` desejado e rep
 ## Deploy
 `vercel.json` existe (build `npm run build:demo`, saída `dist`, fallback SPA para `/index.html`). **Nenhum deploy foi feito** e não há URL pública. O fallback foi verificado localmente com `vite preview` (`tests/e2e/deep-route.spec.ts`), não na Vercel.
 
-## Documentos
-`ARCHITECTURE.md`, `docs/CONTRACTS.md`, `docs/requirements/requirements-matrix.md`, `docs/qa/known-gaps.md`, `docs/testing/test-strategy.md`, `GLOSSARIO.md`, `RESEARCH.md`, `DIFERENCAS.md`, `docs/adr/0001-limite-quantidade-edicao.md`, `docs/quantity-limit-spec.md`, `REVIEW.md`, `reports/`.
-
 ## Limitações — o desafio completo NÃO está entregue
 - Deploy público não realizado (apenas configuração). PR no fork não aberto.
 - Fidelidade ao Figma não verificada (sem acesso ao arquivo).
-- shadcn/ui usado em login, cadastro, carrinho e checkout; perfil, carteiras e catálogo ainda sem shadcn.
+- shadcn/ui usado nas telas de autenticação, perfil/carteiras, catálogo, detalhe, carrinho, checkout e pedido; cobertura total não auditada.
 - Comparação OpenSpec/TLC pendente. Auditoria axe e teste de zoom ausentes.
 - Mocks: Socket.IO só websocket, namespace `/`; estado em memória/navegador.
 Veja `docs/qa/known-gaps.md` e `reports/implementation-status.md`.

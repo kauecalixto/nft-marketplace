@@ -1,91 +1,101 @@
-# Relatório de QA independente (rodada 3)
+# Relatório de QA independente (rodada 4)
 
-Data: 2026-10-21. QA não alterou src, tests nem outros docs.
+Data: 2026-10-21. Nenhum código-fonte ou teste foi alterado. Diretório não é repositório git (sem PR/diff verificável).
 
 ## Rodadas anteriores
-- Rodada 1: aprovado com ressalvas.
-- Rodada 2: aprovado com ressalvas. Lacunas então: filtros/paginação, AbortSignal, política de cache, skeletons, 12 grupos incompletos.
+- r1: aprovado com ressalvas.
+- r2: aprovado com ressalvas.
+- r3: aprovado com ressalvas. Gaps: flake em featured-gallery, config de trace, alt do carrinho, docs defasadas, deploy.
 
 ## Comandos e resultados reais
 | Comando | Resultado |
 |---|---|
 | `npm run typecheck` | OK, sem erros |
-| `npm run lint` (`--max-warnings 0`) | OK, sem avisos |
-| `npm run build:demo` | OK (aviso de chunk >500 kB, não bloqueante) |
-| `npx playwright test --reporter=line` execução 1 | 94 passed, 1 failed (95 testes) |
-| `npx playwright test --reporter=line` execução 2 | 95 passed |
+| `npm run lint` | OK, 0 warnings |
+| `npm run build:demo` | OK; aviso de chunk > 500 kB (`app-*.js` 521 kB, `browser-*.js` 457 kB) |
+| `npm run test:unit` | 3/3 passam |
+| `npx playwright test --reporter=line` execução 1 | **150 passed** (1.1 min) |
+| `npx playwright test --reporter=line` execução 2 | **149 passed, 1 failed**: `[chromium-desktop] purchase.spec.ts:144 duplo clique no envio cria um único pedido` |
+| `purchase.spec.ts:144 --repeat-each=15` (desktop, isolado) | 15/15 passam |
 
-Falha da execução 1: `[chromium-desktop] tests/e2e/featured-gallery.spec.ts:18 destaques exibem skeleton enquanto carregam`.
-
-### Investigação do flake (featured-gallery.spec.ts:18)
-- Handler `/api/nfts/featured` em `src/mocks/handlers.ts:69` atrasa 3000 ms no cenário `slow`. O skeleton (`src/catalog/HomePage.tsx:58`) fica visível por 3 s, bem mais que o timeout do `expect`. Portanto o skeleton em si não é o problema.
-- Causa provável (race de teste): o `beforeEach` (linhas 3-6) faz `goto('/')` e logo em seguida `fetch('/api/__mock/reset')` e `fetch('/api/__mock/scenario')` via `page.evaluate`. `src/main.tsx` só monta o app depois de `await worker.start()`, e o `load` do navegador não espera esse bootstrap assíncrono. Se o `fetch` rodar antes do Service Worker do MSW assumir a página, ele vai ao servidor de preview e não ao handler. O cenário `slow` então nunca é definido, o destaque carrega na hora e o skeleton nunca aparece.
-- Veredito: flake de projeto de teste (falta de espera por prontidão do MSW), não defeito do produto. A execução 2 passou. Não foi possível provar a causa com instrumentação, porque o QA não pode editar testes. Correção sugerida: esperar `navigator.serviceWorker.controller` (ou um sinal "mocks prontos") antes do `fetch`. Os outros specs que usam o mesmo padrão têm a mesma exposição.
+Conclusão: o teste de duplo clique é intermitente sob carga da suíte completa (1 falha em 2 execuções). O featured-gallery, que flakava na r3, passou nas duas execuções.
 
 ## Cobertura dos 12 grupos do §9
-| # | Grupo | Specs | Observação |
+| # | Grupo | Specs | Cobertura |
 |---|---|---|---|
-| 1 | Busca, filtros, ordenação, paginação, histórico | catalog.spec | reload, goBack, fora de ordem, vazio |
-| 2 | Detalhe direto e inexistente | quantity-limit.spec, quantity-extra.spec, not-found.spec | OK |
-| 3 | Cadastro, login, expiração, logout, troca de usuário | account.spec | OK |
-| 4 | Favoritos com falha | account.spec | OK |
-| 5 | Carrinho, cupom, persistência refresh/login | purchase.spec, cart-merge.spec | OK |
-| 6 | Compra completa | purchase.spec | OK |
-| 7 | Falha, clique repetido, timeout | purchase.spec | OK |
-| 8 | Perfil, avatar, senha, carteiras, erros | account.spec, wallet-edit.spec | um teste conjunto no perfil; avatar só por URL |
-| 9 | Preço/disponibilidade via Socket.IO no checkout | realtime.spec | só no detalhe; **não no checkout** |
-| 10 | Duplicados/antigos, desconexão, pedido pendente | realtime.spec, realtime-orders.spec | pendente + desconexão sem teste explícito |
-| 11 | Teclado, foco de diálogo, validação | a11y-keyboard.spec, purchase.spec | OK |
-| 12 | Skeletons, falha, retry | states.spec, catalog.spec, featured-gallery.spec | OK |
+| 1 | Busca, filtros, ordenação, paginação, histórico | catalog.spec | Total |
+| 2 | Detalhe direto e inexistente | deep-route, quantity-limit, not-found | Total |
+| 3 | Cadastro, login, expiração, logout, troca de usuário | account, avatar-wallet-expiry | Total (troca de subscriptions sem teste) |
+| 4 | Favoritos com falha | account | Total |
+| 5 | Carrinho, cupom, persistência refresh/login | purchase, cart-merge, quantity-extra | Total |
+| 6 | Compra completa até o recibo | purchase | Total |
+| 7 | Falha de pagamento, clique repetido, timeout | purchase, realtime-checkout | Total, mas o duplo clique é flaky |
+| 8 | Perfil, avatar, senha, carteiras, validação | account, wallet-edit, avatar-wallet-expiry | Total (avatar por upload existe em `AvatarUpload.tsx`) |
+| 9 | Preço/disponibilidade via Socket.IO no checkout | realtime-checkout, realtime-orders, realtime | Total |
+| 10 | Duplicados/antigos, desconexão, pedido pendente | realtime, realtime-orders, realtime-checkout | Total |
+| 11 | Teclado, foco de diálogos, validação | a11y-keyboard, purchase, responsive | Parcial: sem axe e sem zoom |
+| 12 | Skeletons, falha e retry | states, catalog | Total |
 
-Grupos plenos: 1-8, 11, 12. Parciais: 9 e 10.
+Extras do §9: regressão visual com baselines (visual-regression.spec, 4 telas), `page.clock` no timeout, reporter html, `trace: 'retain-on-failure'` (config presente, atende ao gap da r3). Viewports: desktop 1440, tablet 768 e mobile 390.
 
-## Itens abertos anteriormente
-| Item | Situação |
-|---|---|
-| Foco volta após Esc no diálogo de revisão | Corrigido. `a11y-keyboard.spec.ts:71-88` usa `toBeFocused` e passou nas duas execuções |
-| Overflow em 390 de `/wallets` e `/orders/:id` | Corrigido. `responsive.spec.ts` cobre 390/768/1440 (carrinho, checkout, pedido, perfil, carteiras) e passou |
-| Marcadores `test.fail` | Removidos (grep em `tests` sem ocorrências) |
-| shadcn/ui real | Parcial. Telas: login/cadastro (`AuthPages.tsx` Button; `Field.tsx` Input/Label), carrinho (Button, Input, Skeleton), checkout (Button, Input, Label, Dialog). Catálogo, detalhe, perfil, carteiras e pedido não usam. `ui/badge.tsx` não é usado |
-| 404 | `not-found.spec.ts` passa |
-| Lint | Passa |
-| Destaques, galeria | `featured-gallery.spec.ts` (galeria e destaques passaram; skeleton é o teste flaky) |
-| Edição de carteira | `wallet-edit.spec.ts` passa |
+## Eliminatórios (§11)
+- Stack obrigatória em uso efetivo (Router, Query, Axios, MSW, socket.io-client): atende. Existem `queryClient.ts`, `api.ts`, `mocks/socket.ts` e `realtime/client.ts`.
+- Fluxos principais não são apenas visuais: atende, por causa dos 150 testes E2E.
+- Compra confirmada sem resposta da simulação: não encontrada. Os testes verificam `/orders` na API mock.
+- Exposição de dados entre usuários: há testes de isolamento em account.spec e filtro por userId no socket. O teste de troca de subscriptions na mesma aba não existe.
+- Eventos simulados direto na UI: não encontrado. Os testes passam pelo socket.io-client e pelo MSW.
+- E2E executáveis: atende.
+- **Não eliminatório, mas obrigatório (§12): deploy ausente, sem URL pública.** Isso mantém o desafio incompleto.
+
+## Entrega §12
+- README tem setup, variáveis, credenciais, cenários e reset, comandos, reprodução de falhas e limitações. Seções "Documentos" aparecem duplicadas.
+- ARCHITECTURE.md e docs/CONTRACTS.md existem.
+- Há comandos para dev, build, preview, typecheck, lint, test, audit:lighthouse.
+- `vercel.json` está correto: `framework: vite`, `buildCommand: npm run build:demo` (mocks ativos), `outputDirectory: dist`, rewrite SPA que exclui `assets/` e `mockServiceWorker.js`. Não foi testado em ambiente real.
+- Lighthouse (`reports/lighthouse/README.md`): 12 execuções, medianas todas acima das metas (Perf 96-100, A11y/BP/SEO 100, LCP mobile 2.1-2.4 s). Ressalva: perfil do Chromium reaproveitado, com avisos de IndexedDB.
+
+## Segredos
+Grep por token, secret, api_key e password com atribuição literal em `src`, `scripts` e `*.md` achou só mensagens de validação e campos de formulário, sem segredo. `.env` tem `VITE_API_URL=/api` e `VITE_ENABLE_MOCKS=false`. `.env.demo` tem `VITE_API_URL=/api` e `VITE_ENABLE_MOCKS=true`. Só variáveis públicas.
 
 ## Defeitos
-1. Esperado: relatório HTML e traces das falhas (§9, `Entregue relatório HTML e traces das falhas`). Real: `playwright.config.ts:8` usa `trace: 'on-first-retry'`, mas não há `retries` configurado (padrão 0), então nenhum trace é gerado quando um teste falha. Na execução 1 a falha não deixou trace. Severidade média.
-2. Esperado: testes de §9 isolados e determinísticos. Real: race de prontidão do MSW em `featured-gallery.spec.ts:3-6` e `:18-24` (ver investigação). Severidade baixa a média.
-3. Esperado: imagens relevantes com alternativa textual (§8). Real: `src/purchase/CartPage.tsx:67` usa `alt=""` nas imagens dos itens do carrinho. Severidade baixa (o nome do item aparece ao lado).
-4. Esperado: o enunciado exige o runner `playwright test` e todos os comandos de entrega. Real: `tests/unit/eth.test.mjs` não tem script npm (`package.json` scripts). Severidade baixa.
+1. Teste intermitente. `tests/e2e/purchase.spec.ts:144` (`dblclick` em `confirm-order`).
+   - Esperado: passar de forma estável.
+   - Real: falhou 1 de 2 execuções completas e passou 15/15 isolado.
+   - Causa provável: corrida do dblclick contra a carga da suíte. Não houve tempo para ver o trace.
+2. Aviso de build: chunks maiores que 500 kB (`app`, `browser`). Não afeta as metas do Lighthouse.
+3. `README.md` com a seção "Documentos" duplicada (linhas 40 e 49). Defeito cosmético.
 
-## Lacunas vs enunciado
-- Deploy público (§12, obrigatório): inexistente. Não há `vercel.json`, `netlify.json` nem fallback SPA. Item crítico de entrega.
-- Fidelidade ao Figma (§8, 20 pontos): sem verificação nem tokens. Não verificada.
-- shadcn/ui só em parte das telas (§2, §8).
-- Skeleton com shimmer só em catálogo, detalhe, destaques e resumo do carrinho. Demais telas só com texto.
-- §3: avatar só por URL, sem upload. Sem simulação de conexão/desconexão de carteira (só recusa).
-- §3: expiração de sessão durante o checkout não preserva o formulário.
-- §7/§9: sem teste ponta a ponta do cenário "preço muda via socket, UI informa, checkout bloqueia". Sem teste de pedido pendente com desconexão. Sem teste de isolamento de subscriptions na troca de usuário na mesma aba.
-- §9: sem controle de relógio nos cenários sensíveis a tempo.
-- §8: sem auditoria axe nem teste de zoom.
-- §6: sem cenários 4xx genéricos nos mocks.
-- OpenSpec/TLC na ferramenta alternativa: execução e comparação pendentes. PR no fork não aberto.
-- Eliminatórios (§11): nenhum configurado como violado (stack em uso, MSW + socket.io-client, E2E executáveis). Ressalva: o requisito de deploy do §12 não é atendido.
+## Lacunas vs. enunciado
+- Deploy e URL pública (§12): ausentes.
+- Fidelidade ao Figma: não verificável. Sem acesso ao arquivo.
+- shadcn/ui só parcial: usado em login, cadastro, carrinho, checkout, perfil e catálogo. Não foi possível auditar a cobertura total.
+- Sem auditoria axe e sem teste de zoom (§8).
+- Skeleton só em catálogo, detalhe e resumo do carrinho.
+- Mocks sem cenários 4xx genéricos. Socket.IO só com websocket no namespace `/`.
+- Expiração durante o checkout não preserva o formulário.
+- OpenSpec/TLC: comparação pendente segundo as docs. Existe `docs/comparacao-ferramentas.md` e `reports/speckit-validation.md`, não conferidos em detalhe.
+- PR no fork não aberto.
 
-## Divergências de documentação (verificadas em 12+ linhas)
-Conferidas e corretas: REQ-44 (`src/queryClient.ts`: staleTime 30 s, gcTime 5 min, retry 1x só rede/5xx, mutations sem retry), REQ-42/36 (not-found.spec existe), REQ-64 (a11y-keyboard.spec), REQ-09 (wallet-edit.spec), REQ-62 (shimmer em HomePage, CartPage), REQ-84 (sem deploy), REQ-01/02 (featured-gallery), REQ-10/67 (responsive.spec), REQ-14/40 (signal repassado no HomePage), REQ-82 (README Lighthouse), REQ-80 (visual-regression.spec + snapshots), REQ-83 (lint existe, sem script unit).
-Lighthouse: `reports/lighthouse/README.md` bate com as medianas de `summary.json` nas quatro combinações (inicio mobile 98/100/100/100, LCP 2,12 s, TBT 116 ms; detalhe mobile 96, LCP 2,41 s, TBT 127 ms; desktop 100 e LCP 0,57 s). Todas as metas atingidas.
-Divergências:
-- `docs/requirements/requirements-matrix.md` REQ-63 e `docs/qa/known-gaps.md` dizem que shadcn/ui está "só em checkout/carrinho". O código também usa em login/cadastro (`AuthPages.tsx`, `Field.tsx`, que serve também a perfil/carteiras se importado por eles). Documentação subestima o uso.
-- `reports/implementation-status.md` (linhas de "Código por contexto" e "Comandos") lista testes e specs desatualizados: omite a11y-keyboard, cart-merge, catalog, featured-gallery, not-found, purchase, realtime-orders, responsive, visual-regression e wallet-edit na linha "Testes", e não cita `npm run lint` nos comandos.
-- A matriz diz "trace on-first-retry" em REQ-81 como se entregasse traces; sem retries isso não produz trace (defeito 1).
-- `ui/badge.tsx` existe sem uso.
+## Divergências de documentação (conferidas no código)
+Spot-check de 40 linhas da matriz (REQ-01 a REQ-84) contra código e specs. Em ordem de severidade:
+- **REQ-08 e REQ-45** dizem "avatar só por URL, sem upload". Isso é falso: `src/account/AvatarUpload.tsx` usa `type="file"` e `FileReader`, e está montado em `PrivatePages.tsx:18`. O mesmo vale para README e known-gaps ("Perfil: avatar só por URL").
+- **REQ-24** diz "sem conexão/desconexão de carteira". `CheckoutPage.tsx:54,215,216` implementa os botões `connect-wallet` e `disconnect-wallet`. known-gaps e implementation-status repetem o erro ("Sem simulação de conexão/desconexão"). A cobertura por teste desses botões não foi verificada.
+- **REQ-66** e known-gaps dizem "imagens do carrinho com alt vazio". `CartPage.tsx:67` tem `alt={i.name}`, e `avatar-wallet-expiry.spec.ts:106` testa isso.
+- **REQ-63**, known-gaps e README dizem que perfil, carteiras e catálogo ficam sem shadcn. `PrivatePages.tsx`, `HomePage.tsx` e `NftDetailPage.tsx` importam `components/ui`. Existem também `badge.tsx` e `skeleton.tsx`, que a matriz não lista (só button, input, label e dialog).
+- **REQ-32** (expiração, `avatar-wallet-expiry.spec`) e **REQ-75** (avatar, senha) provavelmente estão defasados. Há spec novo para avatar, carteira e expiração.
+- **REQ-21, REQ-55, REQ-27 e REQ-30** são marcados PARCIAL, mas `realtime-orders.spec` ("nft.updated com NFT no carrinho") e "refresh com pedido pendente recupera o mesmo pedido" cobrem os pontos citados como faltantes. Há subestimação.
+- **REQ-22** diz "sem script npm" para o teste unitário. `npm run test:unit` existe (REQ-83 já confirma).
+- **REQ-72** diz "persistência no login sem teste". `cart-merge.spec` cobre. Texto interno contraditório.
+- **reports/challenge-validation.md** (linha 10): diz que o Lighthouse foi "medido ANTES da migração shadcn... não repetido". Está defasado: o Lighthouse foi rerodado em 2026-10-21. A linha 25 lista "foco após Esc" e "overflow 390 a confirmar" como pendentes, mas ambos já estão corrigidos e testados. Ela também diz que matriz e gaps podem estar desatualizados, o que é verdade apenas para os itens acima.
+- **reports/implementation-status.md**: o comando `npx playwright test` só cita 3 projetos. A lista de testes omite avatar-wallet-expiry, responsive, visual-regression e outros. "shadcn em login, cadastro, carrinho e checkout" está defasado. A seção de "Código por contexto" omite `AvatarUpload.tsx`.
+- Os itens REQ-01 a REQ-07, 09, 12 a 20, 25, 26, 28, 29, 31, 36 a 44, 46 a 54, 56 a 58, 60, 61, 64, 68 a 71, 73, 74, 76 a 82 e 84 coincidem com código e specs na leitura feita. Só verifiquei existência de arquivo e spec, não o comportamento linha a linha.
+- Não foram contados os testes por projeto: 150 = desktop (todos os specs) + tablet e mobile (specs responsivos).
 
 ## Estados
-- IMPLEMENTADO: sim, com parciais acima.
-- TESTADO: sim. Typecheck, lint e build OK; Playwright 94/95 e 95/95 em duas execuções (um flake de teste).
-- VALIDADO: typecheck e build; especificação OpenSpec/TLC alternativa pendente.
-- VERIFICADO: parcial, por esta rodada, sujeito às lacunas.
+- IMPLEMENTADO: sim para o escopo coberto pela matriz. Deploy e Figma não.
+- TESTADO: typecheck, lint, build e unit passam. Playwright: 150/150 em uma execução e 149/150 na outra (flake).
+- VALIDADO: build e tipos. Especificação OpenSpec/TLC não revalidada nesta rodada.
+- VERIFICADO: esta revisão independente, sem acesso ao Figma nem a URL publicada.
 
 ## Veredito
-**APROVADO COM RESSALVAS.** Typecheck, lint, build e E2E passam (uma falha intermitente atribuída ao desenho do teste). Pendências principais: deploy público ausente (obrigatório no §12), fidelidade ao Figma não verificada, traces de falha não gerados, cobertura parcial dos grupos 9 e 10, shadcn/ui parcial.
+**APROVADO COM RESSALVAS.** As verificações automatizadas passam e a cobertura dos 12 grupos é ampla. Os eliminatórios do §11 não foram ativados. As ressalvas são: deploy obrigatório ausente (§12), suíte E2E com um teste intermitente (`purchase.spec.ts:144`), fidelidade ao Figma não verificável, e documentação sobre avatar, carteira, alt e shadcn desatualizada em várias linhas da matriz, em known-gaps, no README e nos relatórios.

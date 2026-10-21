@@ -1,25 +1,47 @@
-# Validação (estado final; comandos rodados por mim às 18:55)
+# Validação (estado final, 2026-10-21)
+
+Fonte dos números: `reports/qa-report.md` (rodada 4) e `reports/lighthouse/summary.json`.
 
 | Comando | Resultado real |
 |---|---|
 | `npm run typecheck` | sem erros |
 | `npm run lint` | sem erros nem warnings |
-| `npm run build:demo` | build ok |
-| `npx playwright test` | **95 passed**, 0 failed (chromium 1440, 768 e 390; regressão visual com 12 baselines versionadas) |
-| `node --test tests/unit/eth.test.mjs` | 3 passed (rodado antes da última rodada de UI) |
-| `npm run audit:lighthouse` | medianas Perf 95–100, A11y/BP/SEO 100 — medido ANTES da migração para shadcn/ui, destaques e galeria; **não repetido** |
+| `npm run build:demo` | build ok (aviso de chunk > 500 kB em `app` e `browser`) |
+| `npx playwright test` execução 1 | **150 passed** |
+| `npx playwright test` execução 2 | **149 passed, 1 failed**: `purchase.spec.ts:144` (duplo clique no envio), intermitente |
+| `purchase.spec.ts:144 --repeat-each=15` (isolado) | 15/15 passaram |
+| `npm run test:unit` | 3 passed |
 
-Ressalvas dos 95:
-- Dois testes usam `test.fail` (defeitos conhecidos documentados nos specs): foco não volta ao botão após Esc no diálogo de revisão (`a11y-keyboard.spec.ts`) e overflow de `/wallets` em 390 px (`responsive.spec.ts`). Eles "passam" porque o defeito era esperado; se o defeito já foi corrigido, o teste deve ser reavaliado (um `test.fail` que passa por dentro falha a suíte, e a suíte passou, portanto os defeitos ainda estavam presentes quando rodei). Não confirmei o estado do overflow de `/wallets` depois do ajuste `break-all` e do estado de `/orders/:id` em 390 px.
-- Specs novos (a11y, realtime-orders, cart-merge, responsive, visual) rodam só no projeto desktop; o loop de viewports está dentro do arquivo.
-- Baselines visuais geradas agora, como referência inicial, não comparadas com o Figma.
+O teste de duplo clique falhou em 1 de 2 execuções completas e passou 15/15 isolado; a causa provável é corrida sob carga, e o trace não foi analisado.
+
+## Lighthouse (rerodado após a migração shadcn/ui, 3 execuções por combinação, medianas)
+| Página | Modo | Perf | A11y | BP | SEO | LCP |
+|---|---|---|---|---|---|---|
+| Início `/` | mobile | 98 | 100 | 100 | 100 | 2,12 s |
+| Detalhe `/nfts/nft-1` | mobile | 96 | 100 | 100 | 100 | 2,41 s |
+| Início `/` | desktop | 100 | 100 | 100 | 100 | 0,57 s |
+| Detalhe `/nfts/nft-1` | desktop | 100 | 100 | 100 | 100 | 0,57 s |
+
+Ressalva: perfil do Chromium reaproveitado, com avisos de IndexedDB nas execuções.
+
+## Defeitos antes pendentes, agora corrigidos e testados
+- Foco volta ao botão `review-order` após Esc no diálogo de revisão (`a11y-keyboard.spec.ts`).
+- Overflow horizontal em 390 px (`/wallets`, `/orders/:id`) (`responsive.spec.ts`).
+
+## Entrega
+- Commits 97be5de e 005f811 enviados para https://github.com/kauecalixto/nft-marketplace (branch main).
+- QA independente, rodadas 1 a 4: aprovado com ressalvas.
+
+## Pendente
+- Deploy: não realizado. `vercel.json` está pronto, mas a Vercel exige a conta do usuário. Sem URL pública (obrigatório no §12).
+- Figma: fidelidade não verificada (sem acesso).
+- PR: não aberto.
+- OpenSpec/TLC: não executado.
+- Auditoria axe e teste de zoom: não feitos.
 
 | Estado | Situação |
 |---|---|
-| IMPLEMENTADO | Catálogo (busca, filtros, ordenação, paginação, destaques), detalhe (galeria, limite de quantidade, favoritos), conta, carrinho/cupom/cotação em BigInt, checkout idempotente, pedidos, Socket.IO via MSW, shadcn/ui nas telas de compra e autenticação, 404, lint |
-| TESTADO | 95 testes Playwright + 3 unitários, rodados por mim |
-| VALIDADO | Parcial: speckit rodou specify/plan/tasks/analyze (0 críticos, 3 médios, 4 baixos — `reports/speckit-validation.md`). Sem validador OpenSpec/TLC; regra da turma não confirmada; o speckit foi gerado a partir de spec e código existentes |
-| VERIFICADO | QA independente rodada 2 (aprovado com ressalvas) cobriu o estado anterior; **a versão final não passou por nova rodada de QA** |
-
-## Não entregue
-Deploy (obrigatório), PR no fork, fidelidade ao Figma (sem acesso), spec em OpenSpec/TLC, Lighthouse atualizado, shadcn/ui nas telas de perfil, carteiras e catálogo (usam Tailwind direto), foco após Esc no diálogo, overflow em 390 px a confirmar. Matriz e gaps em `docs/requirements/requirements-matrix.md` e `docs/qa/known-gaps.md` foram escritos antes da última rodada e podem estar desatualizados quanto a 404, lint, destaques, galeria, edição de carteira e shadcn.
+| IMPLEMENTADO | Escopo da matriz, exceto deploy e Figma |
+| TESTADO | typecheck, lint, build e unit ok; Playwright 150/150 e 149/150 (1 intermitente) |
+| VALIDADO | build e tipos; speckit (`reports/speckit-validation.md`); sem validador OpenSpec/TLC |
+| VERIFICADO | QA independente rodada 4 (aprovado com ressalvas); sem acesso ao Figma nem a URL publicada |
