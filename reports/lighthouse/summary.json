@@ -1,0 +1,259 @@
+{
+  "generatedAt": "2026-10-21T21:58:01.254Z",
+  "lighthouse": "13.5.0",
+  "chromeLauncher": "1.2.2",
+  "chromePath": "C:\\Users\\kaues\\AppData\\Local\\ms-playwright\\chromium-1248\\chrome-win64\\chrome.exe",
+  "os": "Windows_NT 10.0.26300 x64",
+  "cpus": 16,
+  "baseUrl": "http://localhost:4180",
+  "runsPerCombo": 3,
+  "throttlingMethod": "simulate (Lighthouse defaults)",
+  "emulation": {
+    "mobile": "Lighthouse default mobile (Moto G Power, 412x823 dpr 1.75, slow 4G 150ms RTT/1.6Mbps, CPU 4x)",
+    "desktop": "Lighthouse desktopConfig (1350x940, 40ms RTT/10Mbps, CPU 1x)"
+  },
+  "results": [
+    {
+      "page": "inicio",
+      "path": "/",
+      "mode": "mobile",
+      "runs": [
+        {
+          "run": 1,
+          "scores": {
+            "performance": 97,
+            "accessibility": 100,
+            "best-practices": 100,
+            "seo": 100
+          },
+          "lcpMs": 2142.208,
+          "cls": 0,
+          "tbtMs": 123.5,
+          "runWarnings": []
+        },
+        {
+          "run": 2,
+          "scores": {
+            "performance": 98,
+            "accessibility": 100,
+            "best-practices": 100,
+            "seo": 100
+          },
+          "lcpMs": 2120.7624,
+          "cls": 0,
+          "tbtMs": 111.5,
+          "runWarnings": [
+            "There may be stored data affecting loading performance in this location: IndexedDB. Audit this page in an incognito window to prevent those resources from affecting your scores."
+          ]
+        },
+        {
+          "run": 3,
+          "scores": {
+            "performance": 98,
+            "accessibility": 100,
+            "best-practices": 100,
+            "seo": 100
+          },
+          "lcpMs": 2118.4132,
+          "cls": 0,
+          "tbtMs": 116,
+          "runWarnings": [
+            "There may be stored data affecting loading performance in this location: IndexedDB. Audit this page in an incognito window to prevent those resources from affecting your scores."
+          ]
+        }
+      ],
+      "median": {
+        "performance": 98,
+        "accessibility": 100,
+        "best-practices": 100,
+        "seo": 100,
+        "lcpMs": 2120.7624,
+        "cls": 0,
+        "tbtMs": 116
+      }
+    },
+    {
+      "page": "detalhe",
+      "path": "/nfts/nft-1",
+      "mode": "mobile",
+      "runs": [
+        {
+          "run": 1,
+          "scores": {
+            "performance": 96,
+            "accessibility": 100,
+            "best-practices": 100,
+            "seo": 100
+          },
+          "lcpMs": 2413.2465,
+          "cls": 0,
+          "tbtMs": 111,
+          "runWarnings": [
+            "There may be stored data affecting loading performance in this location: IndexedDB. Audit this page in an incognito window to prevent those resources from affecting your scores."
+          ]
+        },
+        {
+          "run": 2,
+          "scores": {
+            "performance": 96,
+            "accessibility": 100,
+            "best-practices": 100,
+            "seo": 100
+          },
+          "lcpMs": 2405.6345,
+          "cls": 0,
+          "tbtMs": 129.5,
+          "runWarnings": [
+            "There may be stored data affecting loading performance in this location: IndexedDB. Audit this page in an incognito window to prevent those resources from affecting your scores."
+          ]
+        },
+        {
+          "run": 3,
+          "scores": {
+            "performance": 96,
+            "accessibility": 100,
+            "best-practices": 100,
+            "seo": 100
+          },
+          "lcpMs": 2405.6234999999997,
+          "cls": 0,
+          "tbtMs": 127,
+          "runWarnings": [
+            "There may be stored data affecting loading performance in this location: IndexedDB. Audit this page in an incognito window to prevent those resources from affecting your scores."
+          ]
+        }
+      ],
+      "median": {
+        "performance": 96,
+        "accessibility": 100,
+        "best-practices": 100,
+        "seo": 100,
+        "lcpMs": 2405.6345,
+        "cls": 0,
+        "tbtMs": 127
+      }
+    },
+    {
+      "page": "inicio",
+      "path": "/",
+      "mode": "desktop",
+      "runs": [
+        {
+          "run": 1,
+          "scores": {
+            "performance": 100,
+            "accessibility": 100,
+            "best-practices": 100,
+            "seo": 100
+          },
+          "lcpMs": 574.1455000000001,
+          "cls": 0.00447180923439294,
+          "tbtMs": 0,
+          "runWarnings": [
+            "There may be stored data affecting loading performance in this location: IndexedDB. Audit this page in an incognito window to prevent those resources from affecting your scores."
+          ]
+        },
+        {
+          "run": 2,
+          "scores": {
+            "performance": 100,
+            "accessibility": 100,
+            "best-practices": 100,
+            "seo": 100
+          },
+          "lcpMs": 573.53725,
+          "cls": 0.0006347695311532352,
+          "tbtMs": 0,
+          "runWarnings": [
+            "There may be stored data affecting loading performance in this location: IndexedDB. Audit this page in an incognito window to prevent those resources from affecting your scores."
+          ]
+        },
+        {
+          "run": 3,
+          "scores": {
+            "performance": 100,
+            "accessibility": 100,
+            "best-practices": 100,
+            "seo": 100
+          },
+          "lcpMs": 573.90725,
+          "cls": 0.0006347695311532352,
+          "tbtMs": 0,
+          "runWarnings": [
+            "There may be stored data affecting loading performance in this location: IndexedDB. Audit this page in an incognito window to prevent those resources from affecting your scores."
+          ]
+        }
+      ],
+      "median": {
+        "performance": 100,
+        "accessibility": 100,
+        "best-practices": 100,
+        "seo": 100,
+        "lcpMs": 573.90725,
+        "cls": 0.0006347695311532352,
+        "tbtMs": 0
+      }
+    },
+    {
+      "page": "detalhe",
+      "path": "/nfts/nft-1",
+      "mode": "desktop",
+      "runs": [
+        {
+          "run": 1,
+          "scores": {
+            "performance": 100,
+            "accessibility": 100,
+            "best-practices": 100,
+            "seo": 100
+          },
+          "lcpMs": 569.2887499999999,
+          "cls": 0,
+          "tbtMs": 0,
+          "runWarnings": [
+            "There may be stored data affecting loading performance in this location: IndexedDB. Audit this page in an incognito window to prevent those resources from affecting your scores."
+          ]
+        },
+        {
+          "run": 2,
+          "scores": {
+            "performance": 100,
+            "accessibility": 100,
+            "best-practices": 100,
+            "seo": 100
+          },
+          "lcpMs": 565.979,
+          "cls": 0,
+          "tbtMs": 0,
+          "runWarnings": [
+            "There may be stored data affecting loading performance in this location: IndexedDB. Audit this page in an incognito window to prevent those resources from affecting your scores."
+          ]
+        },
+        {
+          "run": 3,
+          "scores": {
+            "performance": 100,
+            "accessibility": 100,
+            "best-practices": 100,
+            "seo": 100
+          },
+          "lcpMs": 567.6565,
+          "cls": 0,
+          "tbtMs": 0,
+          "runWarnings": [
+            "There may be stored data affecting loading performance in this location: IndexedDB. Audit this page in an incognito window to prevent those resources from affecting your scores."
+          ]
+        }
+      ],
+      "median": {
+        "performance": 100,
+        "accessibility": 100,
+        "best-practices": 100,
+        "seo": 100,
+        "lcpMs": 567.6565,
+        "cls": 0,
+        "tbtMs": 0
+      }
+    }
+  ]
+}

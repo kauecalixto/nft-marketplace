@@ -1,0 +1,120 @@
+import { test, expect, type Page } from '@playwright/test'
+
+const ADDRESS = '0x' + 'a1'.repeat(20)
+
+test.beforeEach(async ({ page }) => {
+  // O estado do mock vive no navegador (MSW), então o reset roda no contexto da página.
+  await page.goto('/')
+  await page.evaluate(() => {
+    localStorage.clear()
+    return fetch('/api/__mock/reset', { method: 'POST' })
+  })
+  await page.reload()
+})
+
+async function login(page: Page, email: string, password: string) {
+  await page.getByLabel('E-mail').fill(email)
+  await page.getByLabel('Senha').fill(password)
+  await page.getByRole('button', { name: 'Entrar' }).click()
+}
+
+test('cadastro com e-mail existente mostra conflito', async ({ page }) => {
+  await page.goto('/register')
+  await page.getByLabel('Nome').fill('Ana Outra')
+  await page.getByLabel('E-mail').fill('ana@example.test')
+  await page.getByLabel('Senha').fill('senha-longa-1')
+  await page.getByRole('button', { name: 'Cadastrar' }).click()
+  await expect(page.getByTestId('register-error')).toContainText('já está cadastrado')
+})
+
+test('login valida campos, entra, sobrevive ao refresh e faz logout', async ({ page }) => {
+  await page.goto('/login')
+  await page.getByRole('button', { name: 'Entrar' }).click()
+  await expect(page.getByLabel('E-mail')).toHaveAttribute('aria-describedby', 'email-error')
+  await expect(page.locator('#email-error')).toBeVisible()
+  await login(page, 'ana@example.test', 'errada')
+  await expect(page.getByTestId('login-error')).toHaveText('E-mail ou senha inválidos')
+  await login(page, 'ana@example.test', 'kurio-demo')
+  await expect(page.getByTestId('nav-user')).toHaveText('Ana Demo')
+  await page.reload()
+  await expect(page.getByTestId('nav-user')).toHaveText('Ana Demo')
+  await page.getByTestId('logout').click()
+  await expect(page).toHaveURL(/\/login/)
+  await expect(page.getByTestId('nav-user')).toHaveCount(0)
+  await page.goto('/profile')
+  await expect(page).toHaveURL(/\/login\?redirect=/)
+})
+
+test('expiração de sessão redireciona ao login e retorna à página após novo login', async ({ page }) => {
+  await page.goto('/login')
+  await login(page, 'ana@example.test', 'kurio-demo')
+  await expect(page.getByTestId('nav-user')).toBeVisible()
+  await page.goto('/wallets')
+  await expect(page.getByRole('heading', { name: 'Carteiras' })).toBeVisible()
+  await page.evaluate(() => fetch('/api/__mock/session/expire', { method: 'POST', headers: { Authorization: `Bearer ${localStorage.getItem('nft:token')}` } }))
+  await page.reload()
+  await expect(page).toHaveURL(/\/login\?.*expired=true/)
+  await expect(page.getByTestId('session-expired')).toBeVisible()
+  await login(page, 'ana@example.test', 'kurio-demo')
+  await expect(page).toHaveURL(/\/wallets$/)
+  await expect(page.getByRole('heading', { name: 'Carteiras' })).toBeVisible()
+})
+
+test('favorito persiste após reload e faz rollback quando a API falha', async ({ page }) => {
+  await page.goto('/login')
+  await login(page, 'ana@example.test', 'kurio-demo')
+  await expect(page.getByTestId('nav-user')).toBeVisible()
+  await page.goto('/nfts/nft-1')
+  const fav = page.getByTestId('favorite-toggle')
+  await expect(fav).toHaveAttribute('aria-pressed', 'false')
+  await fav.click()
+  await expect(fav).toHaveAttribute('aria-pressed', 'true')
+  await page.reload()
+  await expect(page.getByTestId('favorite-toggle')).toHaveAttribute('aria-pressed', 'true')
+
+  await page.evaluate(() => fetch('/api/__mock/favorites-error', { method: 'POST', body: JSON.stringify({ enabled: true }) }))
+  await page.getByTestId('favorite-toggle').click()
+  await expect(page.getByRole('alert').filter({ hasText: 'favoritos' })).toBeVisible()
+  await expect(page.getByTestId('favorite-toggle')).toHaveAttribute('aria-pressed', 'true')
+})
+
+test('favoritos são isolados por usuário', async ({ page }) => {
+  await page.goto('/login')
+  await login(page, 'ana@example.test', 'kurio-demo')
+  await expect(page.getByTestId('nav-user')).toBeVisible()
+  await page.goto('/nfts/nft-1')
+  await page.getByTestId('favorite-toggle').click()
+  await expect(page.getByTestId('favorite-toggle')).toHaveAttribute('aria-pressed', 'true')
+  await page.getByTestId('logout').click()
+  await expect(page).toHaveURL(/\/login/)
+  await login(page, 'bruno@example.test', 'bruno-demo')
+  await expect(page.getByTestId('nav-user')).toHaveText('Bruno Demo')
+  await page.goto('/nfts/nft-1')
+  await expect(page.getByTestId('favorite-toggle')).toHaveAttribute('aria-pressed', 'false')
+})
+
+test('perfil e carteiras exibem erros de validação e persistem alterações', async ({ page }) => {
+  await page.goto('/login')
+  await login(page, 'ana@example.test', 'kurio-demo')
+  await expect(page.getByTestId('nav-user')).toBeVisible()
+  await page.goto('/profile')
+  await page.getByLabel('Nome', { exact: true }).fill('')
+  await page.getByRole('button', { name: 'Salvar perfil' }).click()
+  await expect(page.locator('#name-error')).toHaveText('Informe o nome')
+  await page.getByLabel('Nome', { exact: true }).fill('Ana Nova')
+  await page.getByRole('button', { name: 'Salvar perfil' }).click()
+  await expect(page.getByTestId('nav-user')).toHaveText('Ana Nova')
+  await page.reload()
+  await expect(page.getByTestId('nav-user')).toHaveText('Ana Nova')
+
+  await page.goto('/wallets')
+  await page.getByLabel('Apelido').fill('Principal')
+  await page.getByLabel('Endereço').fill('0x123')
+  await page.getByRole('button', { name: 'Adicionar carteira' }).click()
+  await expect(page.locator('#address-error')).toContainText('Endereço inválido')
+  await page.getByLabel('Endereço').fill(ADDRESS)
+  await page.getByRole('button', { name: 'Adicionar carteira' }).click()
+  await expect(page.getByTestId('wallet-item')).toHaveCount(1)
+  await page.reload()
+  await expect(page.getByTestId('wallet-item')).toContainText('principal')
+})
