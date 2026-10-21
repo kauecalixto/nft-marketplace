@@ -1,6 +1,6 @@
 # Relatório de QA independente (rodada 4)
 
-Data: 2026-10-21. Nenhum código-fonte ou teste foi alterado. Diretório não é repositório git (sem PR/diff verificável).
+Data: 2026-10-21. Nenhum código-fonte ou teste foi alterado. Correção: o diretório é um repositório git (origin `kauecalixto/nft-marketplace`, branch `main`); a frase original do QA, de que não era, estava errada. Não há PR aberto.
 
 ## Rodadas anteriores
 - r1: aprovado com ressalvas.
