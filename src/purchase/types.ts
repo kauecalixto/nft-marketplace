@@ -15,4 +15,4 @@ export interface Order {
   collector: { name: string; email: string; document: string }
   txHash?: string; explorerUrl?: string
 }
-export interface Wallet { id: string; label?: string; name?: string; address: string }
+export interface Wallet { id: string; label?: string; name?: string; address: string; connected?: boolean }

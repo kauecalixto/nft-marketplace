@@ -1,6 +1,7 @@
 import { defineConfig, devices } from '@playwright/test'
 
-const RESPONSIVE = /(catalog|states|quantity-limit)\.spec\.ts/
+// responsive.spec e visual-regression definem seus próprios viewports (390/768/1440); rodá-los em outros projetos só duplicaria.
+const RESPONSIVE = /(catalog|states|quantity-limit|a11y-keyboard|realtime-orders|realtime-checkout|cart-merge|wallet-edit|featured-gallery|not-found|deep-route).spec.ts/
 
 export default defineConfig({
   testDir: './tests/e2e',

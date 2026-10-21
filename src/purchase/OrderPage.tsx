@@ -1,6 +1,7 @@
 import { useParams, Link } from '@tanstack/react-router'
 import { useQuery } from '@tanstack/react-query'
 import { errorInfo, orderQuery } from './queries'
+import { Button } from '../components/ui/button'
 import { QuoteSummary } from './QuoteSummary'
 
 export function OrderPage() {
@@ -23,7 +24,7 @@ export function OrderPage() {
       <section>
         <h1 className="text-xl font-bold break-all">Pedido {o.id}</h1>
         <p role="alert" data-testid="order-declined">Pedido recusado. Seus itens continuam no carrinho.</p>
-        <Link to="/cart">Voltar ao carrinho</Link>
+        <Button asChild variant="outline" className="mt-2"><Link to="/cart">Voltar ao carrinho</Link></Button>
       </section>
     )
   return (

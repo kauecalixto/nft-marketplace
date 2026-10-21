@@ -10,7 +10,7 @@ npm install
 npx playwright install chromium
 npm run dev          # http://localhost:5173 com mocks (.env.demo)
 ```
-Variáveis públicas (sem segredos): `VITE_ENABLE_MOCKS`, `VITE_API_URL=/api`.
+Variáveis públicas (sem segredos), em `.env.demo`: `VITE_ENABLE_MOCKS=true`, `VITE_API_URL=/api`. Não há chaves, carteiras ou pagamentos reais.
 
 ## Comandos
 | Comando | Efeito |
@@ -19,7 +19,10 @@ Variáveis públicas (sem segredos): `VITE_ENABLE_MOCKS`, `VITE_API_URL=/api`.
 | `npm run build:demo` | Build otimizado com mocks |
 | `npm run preview` | Serve o build (4173) |
 | `npm run typecheck` | `tsc -b` |
-| `npx playwright test` | E2E em chromium 1440, 768 e 390 |
+| `npm run lint` | ESLint com `--max-warnings 0` |
+| `npm run test:unit` | Teste unitário de ETH (`node --test`) |
+| `npm run test:visual` | Só regressão visual (`@visual`) |
+| `npx playwright test` | Todos os E2E: desktop (1440) roda tudo; tablet (768) e mobile (390) rodam os specs de fluxo; relatório HTML em `playwright-report/`, traces em falha |
 | `npm run audit:lighthouse` | Requer `npx vite preview --port 4180 --strictPort`; relatórios em `reports/lighthouse/` |
 
 ## Credenciais fictícias
@@ -37,5 +40,19 @@ Cenários: `default`, `empty`, `http-500`, `slow`, `variable-latency`, `network-
 ## Documentos
 `ARCHITECTURE.md`, `docs/CONTRACTS.md`, `docs/requirements/requirements-matrix.md`, `docs/qa/known-gaps.md`, `docs/testing/test-strategy.md`, `GLOSSARIO.md`, `RESEARCH.md`, `DIFERENCAS.md`, `docs/adr/0001-limite-quantidade-edicao.md`, `docs/quantity-limit-spec.md`, `REVIEW.md`, `reports/` (QA, Lighthouse, status, validação).
 
+## Como reproduzir falhas
+Com a app aberta (`npm run dev`), execute no console o `scenario` desejado e repita a ação: `payment-declined` (pedido recusado), `payment-timeout` (504 com retry e mesma `Idempotency-Key`), `stale-quote` (cotação muda; exige reconfirmar), `wallet-rejected`, `http-500`, `network-error`, `slow`. Tempo real: `POST /api/__mock/nfts/nft-1/update`, `POST /api/__mock/socket/disconnect`, `POST /api/__mock/orders/:id/confirm` (com `payment-held`). Use `reset` entre experimentos.
+
+## Deploy
+`vercel.json` existe (build `npm run build:demo`, saída `dist`, fallback SPA para `/index.html`). **Nenhum deploy foi feito** e não há URL pública. O fallback foi verificado localmente com `vite preview` (`tests/e2e/deep-route.spec.ts`), não na Vercel.
+
+## Documentos
+`ARCHITECTURE.md`, `docs/CONTRACTS.md`, `docs/requirements/requirements-matrix.md`, `docs/qa/known-gaps.md`, `docs/testing/test-strategy.md`, `GLOSSARIO.md`, `RESEARCH.md`, `DIFERENCAS.md`, `docs/adr/0001-limite-quantidade-edicao.md`, `docs/quantity-limit-spec.md`, `REVIEW.md`, `reports/`.
+
 ## Limitações — o desafio completo NÃO está entregue
-Faltam: shadcn/ui, fidelidade ao Figma (sem acesso ao arquivo), regressão visual, testes de teclado/foco e de `order.updated`, rota 404, script de lint e **deploy** (obrigatório no enunciado). Veja `docs/qa/known-gaps.md` e `reports/implementation-status.md`.
+- Deploy público não realizado (apenas configuração). PR no fork não aberto.
+- Fidelidade ao Figma não verificada (sem acesso ao arquivo).
+- shadcn/ui usado em login, cadastro, carrinho e checkout; perfil, carteiras e catálogo ainda sem shadcn.
+- Comparação OpenSpec/TLC pendente. Auditoria axe e teste de zoom ausentes.
+- Mocks: Socket.IO só websocket, namespace `/`; estado em memória/navegador.
+Veja `docs/qa/known-gaps.md` e `reports/implementation-status.md`.

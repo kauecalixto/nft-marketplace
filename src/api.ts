@@ -35,11 +35,15 @@ api.interceptors.request.use((config) => {
   return config
 })
 
+// Permite que telas salvem rascunho (ex.: checkout) antes do redirecionamento por sessão expirada.
+export const sessionExpiryHooks = new Set<() => void>()
+
 const AUTH_PATHS = ['/auth/login', '/auth/register', '/auth/logout']
 api.interceptors.response.use(undefined, (error: unknown) => {
   if (axios.isAxiosError(error) && error.response?.status === 401 && !AUTH_PATHS.some((p) => error.config?.url?.includes(p))) {
     const here = window.location.pathname + window.location.search
     if (getToken() && !window.location.pathname.startsWith('/login')) {
+      sessionExpiryHooks.forEach((fn) => { try { fn() } catch { /* ignore */ } })
       setToken(null)
       queryClient.clear()
       window.location.assign(`/login?redirect=${encodeURIComponent(here)}&expired=true`)

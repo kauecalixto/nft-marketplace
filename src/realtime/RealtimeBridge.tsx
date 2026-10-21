@@ -10,7 +10,7 @@ export function RealtimeBridge() {
   const qc = useQueryClient()
   const path = useRouterState({ select: (s) => s.location.pathname })
   useEffect(() => startRealtime(qc), [qc])
-  return path === '/cart' ? <CartNotice /> : null
+  return path === '/cart' || path === '/checkout' ? <CartNotice /> : null
 }
 
 function CartNotice() {

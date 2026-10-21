@@ -64,7 +64,7 @@ export function CartPage() {
       <ul className="my-4 space-y-2">
         {items?.map((i) => (
           <li key={i.nftId} data-testid={`cart-item-${i.nftId}`} className="flex items-center gap-3">
-            <img src={i.image} alt="" width={48} height={48} />
+            <img src={i.image} alt={i.name} width={48} height={48} />
             <span className="flex-1">
               {i.name} - {i.price} ETH
             </span>

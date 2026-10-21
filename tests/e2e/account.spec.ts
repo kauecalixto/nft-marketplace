@@ -10,6 +10,7 @@ test.beforeEach(async ({ page }) => {
     return fetch('/api/__mock/reset', { method: 'POST' })
   })
   await page.reload()
+  await expect(page.getByRole('navigation').first()).toBeVisible() // app montado antes do teste navegar
 })
 
 async function login(page: Page, email: string, password: string) {

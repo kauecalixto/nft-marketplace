@@ -63,10 +63,10 @@ Estados: IMPLEMENTADO / PARCIAL / NÃO IMPLEMENTADO, avaliados por leitura de c�
 | REQ-57 | Eventos com id, recurso, versão; tolera duplicata/antigo | §7 | Realtime | client.ts `fresh()` | realtime.spec | IMPLEMENTADO | |
 | REQ-58 | Reconexão reconcilia com REST | §7 | Realtime | client.ts | realtime.spec | IMPLEMENTADO | |
 | REQ-59 | Eventos de sessão anterior não atualizam outro usuário; liberar listeners | §7 | Realtime | client.ts, mocks/socket.ts | - | PARCIAL | filtro por userId; sem teste |
-| REQ-60 | Cenário: preço muda -> UI informa, atualiza resumo, checkout barra cotação antiga | §7 | Realtime | CartPage, CheckoutPage | purchase.spec (stale-quote); realtime.spec | PARCIAL | partes testadas separadamente; sem teste ponta a ponta via socket no checkout |
-| REQ-61 | Interrupção com pedido pendente; retomada sem nova compra | §7 | Realtime | OrderPage, orderQuery | purchase.spec (pendente) | PARCIAL | sem teste com desconexão + pendente |
+| REQ-60 | Cenário: preço muda -> UI informa, atualiza resumo, checkout barra cotação antiga | §7 | Realtime | CartPage, CheckoutPage | realtime-checkout.spec, realtime-orders.spec | IMPLEMENTADO | ponta a ponta via socket no checkout (ver execução) |
+| REQ-61 | Interrupção com pedido pendente; retomada sem nova compra | §7 | Realtime | OrderPage, orderQuery | realtime-orders.spec, realtime-checkout.spec | IMPLEMENTADO | desconexão + pendente + um único pedido |
 | REQ-62 | Skeletons com shimmer; prefers-reduced-motion | §8 | UI | HomePage, NftDetailPage, CartPage, index.css | states.spec | PARCIAL | skeleton+shimmer e `prefers-reduced-motion` em catálogo, detalhe e resumo do carrinho; outras telas sem skeleton |
-| REQ-63 | shadcn/ui e fidelidade ao Figma; 390/768/1440 | §8 | UI | src/components/ui (button, input, label, dialog) | responsive.spec, visual-regression.spec | PARCIAL | shadcn/ui só em checkout/carrinho (parcial); perfil, carteiras e catálogo sem shadcn; Figma sem acesso (NÃO IMPLEMENTADO) |
+| REQ-63 | shadcn/ui e fidelidade ao Figma; 390/768/1440 | §8 | UI | src/components/ui (button, input, label, dialog) | responsive.spec, visual-regression.spec | PARCIAL | shadcn/ui em login, cadastro, carrinho e checkout; perfil, carteiras e catálogo sem shadcn; Figma sem acesso (NÃO IMPLEMENTADO) |
 | REQ-64 | Teclado, foco visível, foco em diálogos | §8 | UI | CheckoutPage dialog (onCloseAutoFocus) | a11y-keyboard.spec | IMPLEMENTADO | trap de foco, Esc e retorno ao botão `review-order` testados |
 | REQ-65 | Semântica, labels, erros associados | §8 | UI | Field.tsx, app.tsx (`<main>`) | account.spec, a11y-keyboard.spec | PARCIAL | login, cadastro, perfil, senha e carteiras testados; demais telas sem auditoria axe |
 | REQ-66 | Alt de imagens, contraste, não só cor, feedback acessível | §8 | UI | role=status/alert | - | PARCIAL | live regions; imagens do carrinho com alt vazio |
@@ -79,13 +79,13 @@ Estados: IMPLEMENTADO / PARCIAL / NÃO IMPLEMENTADO, avaliados por leitura de c�
 | REQ-73 | E2E 6: compra completa | §9 | Compra | purchase.spec | purchase.spec | IMPLEMENTADO | |
 | REQ-74 | E2E 7: falha, clique repetido, timeout | §9 | Compra | purchase.spec | purchase.spec | IMPLEMENTADO | |
 | REQ-75 | E2E 8: perfil, avatar, senha, carteiras | §9 | Conta | account.spec | account.spec | PARCIAL | um teste conjunto; avatar/senha não confirmados individualmente |
-| REQ-76 | E2E 9: preço via Socket.IO no checkout | §9 | Realtime | realtime.spec | realtime.spec (detalhe) | PARCIAL | não no checkout |
-| REQ-77 | E2E 10: duplicados/antigos, desconexão, pedido pendente | §9 | Realtime | realtime.spec | realtime.spec | PARCIAL | duplicata/antigo e desconexão sim; pedido pendente com desconexão não |
+| REQ-76 | E2E 9: preço via Socket.IO no checkout | §9 | Realtime | realtime-checkout.spec | realtime-checkout.spec | IMPLEMENTADO | checkout com diálogo aberto |
+| REQ-77 | E2E 10: duplicados/antigos, desconexão, pedido pendente | §9 | Realtime | realtime.spec | realtime.spec, realtime-orders.spec, realtime-checkout.spec | IMPLEMENTADO | |
 | REQ-78 | E2E 11: teclado, foco de diálogos, validação | §9 | UI | CheckoutPage | a11y-keyboard.spec, purchase.spec | IMPLEMENTADO | Tab, foco visível, trap, Esc, retorno de foco |
 | REQ-79 | E2E 12: skeletons, falha e nova tentativa | §9 | UI | states.spec, catalog.spec | states.spec, catalog.spec | IMPLEMENTADO | skeleton sob `slow`, 500 e `network-error` com "Tentar novamente" |
 | REQ-80 | Chromium em desktop e mobile; regressão visual com baselines | §9 | Testes | playwright.config.ts | visual-regression.spec | IMPLEMENTADO | projetos desktop/tablet/mobile; `toHaveScreenshot` com baselines em `visual-regression.spec.ts-snapshots` |
-| REQ-81 | Isolamento por teste; relógio/latência controlados; relatório HTML e traces | §9 | Testes | playwright.config.ts | - | PARCIAL | reporter html, trace on-first-retry; sem controle de relógio |
+| REQ-81 | Isolamento por teste; relógio/latência controlados; relatório HTML e traces | §9 | Testes | playwright.config.ts | realtime-checkout.spec (`page.clock`) | IMPLEMENTADO | reporter html, trace retain-on-failure, relógio controlado no timeout de pagamento |
 
 | REQ-82 | Lighthouse: 3 execuções por página/perfil, config versionada, relatórios (§10) | §10 | Entrega | scripts/lighthouse.mjs, reports/lighthouse/ | - | IMPLEMENTADO | rerodado em 2026-10-21; medianas em `reports/lighthouse/README.md` (Perf 96-100, A11y/BP/SEO 100) |
-| REQ-83 | Script de lint e demais comandos de entrega (§12) | §12 | Entrega | package.json | - | PARCIAL | script `lint` (eslint) existe; ainda sem script npm para `tests/unit/eth.test.mjs` |
-| REQ-84 | Deploy público (§12) | §12 | Entrega | - | - | NÃO IMPLEMENTADO | sem configuração de deploy |
+| REQ-83 | Script de lint e demais comandos de entrega (§12) | §12 | Entrega | package.json | - | IMPLEMENTADO | scripts `lint`, `test:unit`, `test:visual`, `test:e2e` |
+| REQ-84 | Deploy público (§12) | §12 | Entrega | vercel.json | deep-route.spec (preview local) | PARCIAL | configuração existe (build:demo, dist, rewrite SPA); NENHUM deploy realizado, sem URL pública |

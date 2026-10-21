@@ -2,6 +2,8 @@ import { useState, type FormEvent } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { api } from '../api'
 import { Field } from './Field'
+import { AvatarUpload } from './AvatarUpload'
+import { Button } from '../components/ui/button'
 import { apiErrors, useSession, type FieldErrors, type User } from './session'
 
 const ADDRESS = /^0x[0-9a-fA-F]{40}$/
@@ -13,6 +15,7 @@ export function ProfilePage() {
   return (
     <div className="space-y-8">
       <ProfileForm key={user.id + user.name + user.avatar} user={user} />
+      <AvatarUpload />
       <PasswordForm />
     </div>
   )
@@ -36,7 +39,7 @@ function ProfileForm({ user }: { user: User }) {
     const avatar = String(f.get('avatar') ?? '').trim()
     const errs: FieldErrors = {}
     if (!name) errs.name = 'Informe o nome'
-    if (avatar && !/^https?:\/\/\S+$/.test(avatar)) errs.avatar = 'URL do avatar inválida'
+    if (avatar && !avatar.startsWith('data:image/') && !/^https?:\/\/\S+$/.test(avatar)) errs.avatar = 'URL do avatar inválida'
     setErrors(errs)
     if (!Object.keys(errs).length) m.mutate({ name, avatar })
   }
@@ -47,9 +50,9 @@ function ProfileForm({ user }: { user: User }) {
       {user.avatar && <img src={user.avatar} alt="Avatar" className="w-16 h-16" />}
       <Field id="name" label="Nome" defaultValue={user.name} error={errors.name} />
       <Field id="avatar" label="URL do avatar" defaultValue={user.avatar} error={errors.avatar} />
-      <button type="submit" disabled={m.isPending} className="bg-black text-white px-4 py-2 disabled:opacity-40">
+      <Button type="submit" disabled={m.isPending}>
         Salvar perfil
-      </button>
+      </Button>
       {m.isSuccess && <p role="status">Perfil atualizado</p>}
     </form>
   )
@@ -79,9 +82,9 @@ function PasswordForm() {
       <h2 id="password-title" className="text-xl font-bold">Alterar senha</h2>
       <Field id="currentPassword" label="Senha atual" type="password" autoComplete="current-password" error={errors.currentPassword} />
       <Field id="newPassword" label="Nova senha" type="password" autoComplete="new-password" error={errors.newPassword} />
-      <button type="submit" disabled={m.isPending} className="bg-black text-white px-4 py-2 disabled:opacity-40">
+      <Button type="submit" disabled={m.isPending}>
         Alterar senha
-      </button>
+      </Button>
       {m.isSuccess && <p role="status">Senha alterada</p>}
     </form>
   )
@@ -117,31 +120,32 @@ function WalletRow({ wallet: w, queryKey, onPrimary }: { wallet: Wallet; queryKe
         <form onSubmit={submit} noValidate className="space-y-3 max-w-sm" aria-label={`Editar carteira ${w.label}`}>
           <Field id={`label-${w.id}`} label="Apelido" defaultValue={w.label} error={errors.label} />
           <Field id={`address-${w.id}`} label="Endereço" defaultValue={w.address} error={errors.address} />
-          <button type="submit" disabled={save.isPending} className="bg-black text-white px-4 py-2 disabled:opacity-40">
+          <Button type="submit" disabled={save.isPending}>
             Salvar carteira
-          </button>
-          <button
+          </Button>
+          <Button
             type="button"
-            className="ml-2 underline"
+            variant="link"
+            className="ml-2"
             onClick={() => {
               setEditing(false)
               setErrors({})
             }}
           >
             Cancelar
-          </button>
+          </Button>
         </form>
       ) : (
         <>
           <strong className="break-words">{w.label}</strong> ({w.role === 'primary' ? 'principal' : 'secundária'}) <code className="break-all">{w.address}</code>
           {w.role !== 'primary' && (
-            <button onClick={onPrimary} className="ml-2 underline">
+            <Button type="button" variant="link" size="sm" onClick={onPrimary} className="ml-2">
               Tornar principal
-            </button>
+            </Button>
           )}
-          <button onClick={() => setEditing(true)} className="ml-2 underline" aria-label={`Editar ${w.label}`}>
+          <Button type="button" variant="link" size="sm" onClick={() => setEditing(true)} className="ml-2" aria-label={`Editar ${w.label}`}>
             Editar
-          </button>
+          </Button>
         </>
       )}
     </li>
@@ -197,9 +201,9 @@ export function WalletsPage() {
         <h2 id="wallet-form-title" className="text-xl font-bold">Adicionar carteira</h2>
         <Field id="label" label="Apelido" error={errors.label} />
         <Field id="address" label="Endereço" error={errors.address} />
-        <button type="submit" disabled={add.isPending} className="bg-black text-white px-4 py-2 disabled:opacity-40">
+        <Button type="submit" disabled={add.isPending}>
           Adicionar carteira
-        </button>
+        </Button>
       </form>
     </div>
   )

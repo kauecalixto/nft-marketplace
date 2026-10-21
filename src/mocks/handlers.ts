@@ -8,8 +8,25 @@ export type Scenario =
   | 'default' | 'empty' | 'http-500' | 'slow' | 'variable-latency' | 'network-error'
   | 'payment-declined' | 'payment-pending' | 'payment-held' | 'payment-timeout' | 'stale-quote' | 'wallet-rejected'
 const PAGE_SIZE = 6
+// O cenário de catálogo persiste em localStorage para sobreviver a refresh; o reset o limpa.
+const SCENARIO_KEY = 'nft-marketplace:scenario'
+function loadScenario(): Scenario {
+  try {
+    return (localStorage.getItem(SCENARIO_KEY) as Scenario | null) ?? 'default'
+  } catch {
+    return 'default'
+  }
+}
+function saveScenario(s: Scenario) {
+  try {
+    if (s === 'default') localStorage.removeItem(SCENARIO_KEY)
+    else localStorage.setItem(SCENARIO_KEY, s)
+  } catch {
+    /* sem storage */
+  }
+}
 const state: { scenario: Scenario } = {
-  scenario: 'default',
+  scenario: loadScenario(),
 }
 
 export const handlers = [
@@ -19,12 +36,14 @@ export const handlers = [
     if (isPurchaseScenario(scenario)) setPurchaseScenario(scenario)
     else {
       state.scenario = scenario
+      saveScenario(scenario)
       setPurchaseScenario('default')
     }
     return HttpResponse.json({ scenario })
   }),
   http.post('/api/__mock/reset', () => {
     state.scenario = 'default'
+    saveScenario('default')
     resetNftOverrides()
     resetAccount()
     resetPurchase()

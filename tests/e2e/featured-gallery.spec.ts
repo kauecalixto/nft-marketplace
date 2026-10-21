@@ -1,8 +1,8 @@
 import { test, expect } from '@playwright/test'
+import { api, resetAs } from './helpers-extra'
 
 test.beforeEach(async ({ page }) => {
-  await page.goto('/')
-  await page.evaluate(() => fetch('/api/__mock/reset', { method: 'POST' }))
+  await resetAs(page, null) // espera o app montar (MSW pronto) antes do reset
 })
 
 test('home mostra seção Destaques com 3 cards acima do catálogo', async ({ page }) => {
@@ -16,9 +16,7 @@ test('home mostra seção Destaques com 3 cards acima do catálogo', async ({ pa
 })
 
 test('destaques exibem skeleton enquanto carregam', async ({ page }) => {
-  await page.evaluate(() =>
-    fetch('/api/__mock/scenario', { method: 'POST', body: JSON.stringify({ scenario: 'slow' }) }),
-  )
+  await api(page, 'POST', '/__mock/scenario', { scenario: 'slow' })
   await page.goto('/')
   await expect(page.getByTestId('skeleton-featured')).toBeVisible()
 })

@@ -1,7 +1,8 @@
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Link, useNavigate } from '@tanstack/react-router'
-import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { api } from '../api'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { api, sessionExpiryHooks } from '../api'
+import { useSession } from '../account/session'
 import { NETWORKS, errorInfo, quoteQuery, useCart, useQuote, useWallets } from './queries'
 import { Button } from '../components/ui/button'
 import { Input } from '../components/ui/input'
@@ -13,15 +14,19 @@ import type { Order, Quote } from './types'
 interface Form { name: string; email: string; document: string; walletId: string; network: string }
 type Errors = Partial<Record<keyof Form, string>>
 
-export function validate(f: Form): Errors {
+export function validate(f: Form, connected = true): Errors {
   const e: Errors = {}
   if (f.name.trim().length < 3) e.name = 'Informe o nome completo'
   if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(f.email)) e.email = 'E-mail inválido'
   if (!/^\d{11}$/.test(f.document)) e.document = 'Documento deve ter 11 dígitos'
   if (!f.walletId) e.walletId = 'Selecione uma carteira'
+  else if (!connected) e.walletId = 'Conecte a carteira para continuar'
   if (!f.network) e.network = 'Selecione uma rede'
   return e
 }
+
+const draftKey = (userId: string) => `checkout-draft:${userId}`
+interface Draft { form: Form; open: boolean; idemKey: string }
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms))
 
@@ -31,6 +36,8 @@ export function CheckoutPage() {
   const cart = useCart()
   const wallets = useWallets()
   const pending = useQuery({ queryKey: ['orders', 'pending'], queryFn: async ({ signal }) => (await api.get<Order[]>('/orders', { params: { status: 'pending' }, signal })).data })
+  const session = useSession()
+  const userId = session.data?.id
   const [form, setForm] = useState<Form>({ name: '', email: '', document: '', walletId: '', network: 'ethereum' })
   const [errors, setErrors] = useState<Errors>({})
   const quote = useQuote(form.network)
@@ -40,14 +47,52 @@ export function CheckoutPage() {
   const [orderError, setOrderError] = useState<string | null>(null)
   const [submitting, setSubmitting] = useState(false)
   const busy = useRef(false)
-  const idemKey = useRef(crypto.randomUUID())
+  const idemKey = useRef<string>(crypto.randomUUID())
   const opener = useRef<HTMLButtonElement>(null)
+  const [walletError, setWalletError] = useState<string | null>(null)
+  const connection = useMutation({
+    mutationFn: async (v: { id: string; action: 'connect' | 'disconnect' }) => (await api.post(`/wallets/${v.id}/${v.action}`)).data,
+    onMutate: () => setWalletError(null),
+    onSuccess: () => { setErrors((e) => ({ ...e, walletId: undefined })); return qc.invalidateQueries({ queryKey: ['wallets'] }) },
+    onError: (e) => setWalletError(errorInfo(e).code === 'WALLET_REJECTED' ? 'A carteira recusou a conexão. Tente novamente.' : errorInfo(e).message),
+  })
 
+  // Sessão expirada: salva formulário, estado da revisão e Idempotency-Key por usuário (sessionStorage).
+  const snapshot = useRef<Draft | null>(null)
+  useEffect(() => { snapshot.current = { form, open, idemKey: idemKey.current } })
+  useEffect(() => {
+    if (!userId) return
+    const save = () => {
+      try { sessionStorage.setItem(draftKey(userId), JSON.stringify(snapshot.current)) } catch { /* ignore */ }
+    }
+    sessionExpiryHooks.add(save)
+    return () => void sessionExpiryHooks.delete(save)
+  }, [userId])
+  const restored = useRef(false)
+  const [restoredNotice, setRestoredNotice] = useState(false)
+  useEffect(() => {
+    if (!userId || restored.current) return
+    restored.current = true
+    let draft: Draft | null = null
+    try {
+      draft = JSON.parse(sessionStorage.getItem(draftKey(userId)) ?? 'null') as Draft | null
+      sessionStorage.removeItem(draftKey(userId))
+    } catch { /* ignore */ }
+    if (!draft) return
+    setForm(draft.form)
+    idemKey.current = draft.idemKey
+    setRestoredNotice(true)
+    if (draft.open) {
+      void qc.fetchQuery({ ...quoteQuery(draft.form.network), staleTime: 0 }).then((q) => { setReviewQuote(q); setOpen(true) })
+    }
+  }, [userId, qc])
+
+  const selectedWallet = wallets.data?.find((w) => w.id === form.walletId)
   const set = (k: keyof Form) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => setForm((f) => ({ ...f, [k]: e.target.value }))
 
   const openReview = async (e: React.FormEvent) => {
     e.preventDefault()
-    const errs = validate(form)
+    const errs = validate(form, selectedWallet?.connected !== false)
     setErrors(errs)
     if (Object.keys(errs).length) return
     setOrderError(null)
@@ -96,7 +141,7 @@ export function CheckoutPage() {
             await sleep(300)
             continue // mesma Idempotency-Key: recupera o mesmo pedido
           }
-          idemKey.current = transient ? idemKey.current : crypto.randomUUID()
+          idemKey.current = transient || info.status === 401 ? idemKey.current : crypto.randomUUID()
           if (info.code === 'QUOTE_STALE') {
             setReviewQuote(info.data.quote as Quote)
             setStale(true)
@@ -139,6 +184,7 @@ export function CheckoutPage() {
           Você tem um pedido pendente: <Link to="/orders/$id" params={{ id: pend.id }}>{pend.id}</Link>
         </p>
       )}
+      {restoredNotice && <p role="status" data-testid="draft-restored">Recuperamos os dados do seu checkout.</p>}
       {empty ? (
         <p data-testid="checkout-empty">Carrinho vazio. <Link to="/">Ver catálogo</Link></p>
       ) : (
@@ -163,6 +209,14 @@ export function CheckoutPage() {
               </select>
             </label>
             <p role={errors.walletId ? 'alert' : undefined} data-testid="error-walletId" className="text-red-700">{errors.walletId}</p>
+            {selectedWallet && (
+              <div className="flex items-center gap-2 mt-1">
+                <span data-testid="wallet-status" role="status">{connection.isPending ? 'Processando...' : selectedWallet.connected === false ? 'Desconectada' : 'Conectada'}</span>
+                <Button type="button" size="sm" data-testid="connect-wallet" disabled={connection.isPending || selectedWallet.connected !== false} onClick={() => connection.mutate({ id: selectedWallet.id, action: 'connect' })}>Conectar</Button>
+                <Button type="button" size="sm" variant="outline" data-testid="disconnect-wallet" disabled={connection.isPending || selectedWallet.connected === false} onClick={() => connection.mutate({ id: selectedWallet.id, action: 'disconnect' })}>Desconectar</Button>
+              </div>
+            )}
+            {walletError && <p role="alert" data-testid="wallet-error" className="text-red-700">{walletError}</p>}
             {!wallets.data?.length && <p>Nenhuma carteira cadastrada. <Link to="/wallets">Cadastrar carteira</Link></p>}
           </div>
           <label className="block">

@@ -1,4 +1,5 @@
 import { http, HttpResponse } from 'msw'
+import { getPurchaseScenario } from './purchase'
 import { setUserResolver, type MockUser } from './shared'
 
 // Contas, sessão, favoritos, perfil e carteiras simulados na camada de rede.
@@ -6,7 +7,7 @@ import { setUserResolver, type MockUser } from './shared'
 const DB_KEY = 'nft-marketplace:account-db'
 
 interface StoredUser { id: string; email: string; name: string; avatar: string; salt: string; hash: string }
-interface Wallet { id: string; label: string; address: string; role: 'primary' | 'secondary' }
+interface Wallet { id: string; label: string; address: string; role: 'primary' | 'secondary'; connected?: boolean }
 interface Db {
   users: StoredUser[]
   expired: string[] // ids de usuários com sessão expirada
@@ -185,7 +186,10 @@ export const accountHandlers = [
     const b = (await request.json()) as { name?: string; avatar?: string }
     const errors: Record<string, string> = {}
     if (b.name !== undefined && !b.name.trim()) errors.name = 'Informe o nome'
-    if (b.avatar && !/^https?:\/\/\S+$/.test(b.avatar)) errors.avatar = 'URL do avatar inválida'
+    if (b.avatar && b.avatar.startsWith('data:')) {
+      if (!/^data:image\/[a-z0-9.+-]+;base64,/i.test(b.avatar)) errors.avatar = 'Envie um arquivo de imagem'
+      else if (b.avatar.length > 1_400_000) errors.avatar = 'A imagem deve ter no máximo 1 MB'
+    } else if (b.avatar && !/^https?:\/\/\S+$/.test(b.avatar)) errors.avatar = 'URL do avatar inválida'
     if (Object.keys(errors).length) return invalid(errors)
     if (b.name !== undefined) user.name = b.name.trim()
     if (b.avatar !== undefined) user.avatar = b.avatar
@@ -227,10 +231,31 @@ export const accountHandlers = [
       label: b.label!.trim(),
       address: b.address!,
       role: list.length ? 'secondary' : 'primary',
+      connected: true,
     }
     db.wallets[user.id] = [...list, w]
     write(db)
     return HttpResponse.json(w, { status: 201 })
+  }),
+  http.post('/api/wallets/:id/connect', async ({ request, params }) => {
+    const { db, user } = await auth(request)
+    if (!user) return unauth()
+    const w = (db.wallets[user.id] ?? []).find((x) => x.id === params.id)
+    if (!w) return HttpResponse.json({ code: 'NOT_FOUND', message: 'Carteira inexistente' }, { status: 404 })
+    if (getPurchaseScenario() === 'wallet-rejected')
+      return HttpResponse.json({ code: 'WALLET_REJECTED', message: 'A carteira recusou a conexão' }, { status: 409 })
+    w.connected = true
+    write(db)
+    return HttpResponse.json(w)
+  }),
+  http.post('/api/wallets/:id/disconnect', async ({ request, params }) => {
+    const { db, user } = await auth(request)
+    if (!user) return unauth()
+    const w = (db.wallets[user.id] ?? []).find((x) => x.id === params.id)
+    if (!w) return HttpResponse.json({ code: 'NOT_FOUND', message: 'Carteira inexistente' }, { status: 404 })
+    w.connected = false
+    write(db)
+    return HttpResponse.json(w)
   }),
   http.patch('/api/wallets/:id', async ({ request, params }) => {
     const { db, user } = await auth(request)

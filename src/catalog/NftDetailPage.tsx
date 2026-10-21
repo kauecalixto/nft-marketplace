@@ -6,6 +6,9 @@ import { api } from '../api'
 import type { Nft } from './types'
 import { maxQuantity } from './quantity'
 import { NftUpdateNotice } from '../realtime/Notice'
+import { Button } from '../components/ui/button'
+import { Input } from '../components/ui/input'
+import { Skeleton } from '../components/ui/skeleton'
 import { FavoriteButton } from '../account/FavoriteButton'
 
 export function NftDetailPage() {
@@ -24,11 +27,11 @@ export function NftDetailPage() {
 function DetailSkeleton() {
   return (
     <div data-testid="skeleton-detail" aria-busy="true" aria-label="Carregando NFT" role="status" className="space-y-3">
-      <div className="skeleton w-64 h-64" />
-      <div className="skeleton h-8 w-48" />
-      <div className="skeleton h-5 w-24" />
-      <div className="skeleton h-5 w-72 max-w-full" />
-      <div className="skeleton h-10 w-40" />
+      <Skeleton className="w-64 h-64" />
+      <Skeleton className="h-8 w-48" />
+      <Skeleton className="h-5 w-24" />
+      <Skeleton className="h-5 w-72 max-w-full" />
+      <Skeleton className="h-10 w-40" />
     </div>
   )
 }
@@ -84,16 +87,18 @@ function Detail({ nft }: { nft: Nft }) {
       {unavailable && nft.edition.available > 0 && <p data-testid="wallet-quota-unavailable">Sem cota para esta carteira</p>}
       {!unavailable && (
       <div className="flex items-center gap-2">
-        <button
+        <Button
+          type="button"
+          variant="outline"
+          size="icon"
           data-testid="quantity-decrease"
           aria-label="Diminuir quantidade"
           disabled={qty <= 1}
           onClick={() => setQty(clamp(qty - 1))}
-          className="border px-3 disabled:opacity-40"
         >
           -
-        </button>
-        <input
+        </Button>
+        <Input
           data-testid="quantity-input"
           aria-label="Quantidade"
           type="number"
@@ -107,28 +112,29 @@ function Detail({ nft }: { nft: Nft }) {
             setQty(clamp(Number(e.target.value)))
           }}
           onBlur={() => setEmpty(false)}
-          className="border w-16 text-center"
+          className="w-16 text-center"
         />
-        <button
+        <Button
+          type="button"
+          variant="outline"
+          size="icon"
           data-testid="quantity-increase"
           aria-label="Aumentar quantidade"
           disabled={atMax}
           onClick={() => setQty(clamp(qty + 1))}
-          className="border px-3 disabled:opacity-40"
         >
           +
-        </button>
+        </Button>
       </div>
       )}
       {atMax && <p data-testid="quantity-limit-message">Limite de quantidade atingido</p>}
-      <button
+      <Button
         data-testid="add-to-cart"
         disabled={unavailable || add.isPending}
         onClick={() => add.mutate()}
-        className="bg-black text-white px-4 py-2 disabled:opacity-40"
       >
         Adicionar ao carrinho
-      </button>
+      </Button>
       {add.isSuccess && <p role="status">Adicionado ao carrinho ({qty})</p>}
       {add.isError && <p role="alert">Não foi possível adicionar ao carrinho</p>}
     </article>

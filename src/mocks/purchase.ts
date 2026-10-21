@@ -43,6 +43,7 @@ export function setPurchaseScenario(s: string) {
   S.scenario = s
   save()
 }
+export const getPurchaseScenario = () => S.scenario
 export function isPurchaseScenario(s: string) {
   return PURCHASE_SCENARIOS.includes(s)
 }

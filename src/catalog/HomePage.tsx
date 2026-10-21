@@ -3,6 +3,11 @@ import { keepPreviousData, useQuery } from '@tanstack/react-query'
 import { Link, useNavigate, useSearch } from '@tanstack/react-router'
 import { api } from '../api'
 import { parseEth } from '../purchase/eth'
+import { Button } from '../components/ui/button'
+import { Input } from '../components/ui/input'
+import { Label } from '../components/ui/label'
+import { Badge } from '../components/ui/badge'
+import { Skeleton } from '../components/ui/skeleton'
 import type { Nft, NftPage } from './types'
 
 export const SORTS = ['price-asc', 'price-desc', 'name'] as const
@@ -36,9 +41,9 @@ function CardsSkeleton() {
     <ul data-testid="skeleton-catalog" aria-busy="true" aria-label="Carregando catálogo" className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
       {Array.from({ length: 6 }, (_, i) => (
         <li key={i} data-testid="skeleton-card" className="border rounded p-3">
-          <div className="skeleton w-full aspect-square" />
-          <div className="skeleton h-6 w-3/4 mt-2" />
-          <div className="skeleton h-5 w-1/2 mt-2" />
+          <Skeleton className="w-full aspect-square" />
+          <Skeleton className="h-6 w-3/4 mt-2" />
+          <Skeleton className="h-5 w-1/2 mt-2" />
         </li>
       ))}
     </ul>
@@ -58,8 +63,8 @@ function Featured() {
         <ul data-testid="skeleton-featured" aria-busy="true" aria-label="Carregando destaques" className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           {Array.from({ length: 3 }, (_, i) => (
             <li key={i} className="border rounded p-3">
-              <div className="skeleton w-full aspect-square" />
-              <div className="skeleton h-6 w-3/4 mt-2" />
+              <Skeleton className="w-full aspect-square" />
+              <Skeleton className="h-6 w-3/4 mt-2" />
             </li>
           ))}
         </ul>
@@ -69,6 +74,7 @@ function Featured() {
             <li key={n.id} data-testid="featured-card" className="border rounded p-3 min-w-0">
               <Link to="/nfts/$id" params={{ id: n.id }}>
                 <img src={n.image} alt={n.name} className="w-full aspect-square" />
+                <Badge variant="secondary" className="mt-2">Em destaque</Badge>
                 <h3 className="font-semibold break-words">{n.name}</h3>
                 <p>{n.price} ETH</p>
               </Link>
@@ -118,50 +124,50 @@ export function HomePage() {
     <section>
       <Featured />
       <div className="flex flex-wrap gap-3 items-end mb-4">
-        <input
+        <Input
           aria-label="Buscar NFT"
           placeholder="Buscar"
-          className="border rounded px-2 py-1"
+          className="w-48 max-w-full"
           value={q ?? ''}
           onChange={(e) => setFilters({ q: e.target.value || undefined }, true)}
         />
-        <label className="flex flex-col text-sm">
+        <Label className="flex flex-col gap-1">
           Preço mín. (ETH)
-          <input
+          <Input
             inputMode="decimal"
-            className="border rounded px-2 py-1 w-28"
+            className="w-28"
             value={minText}
             aria-invalid={bad(minText)}
             onChange={(e) => setMinText(e.target.value)}
             onBlur={(e) => commit('min', e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && commit('min', minText)}
           />
-        </label>
-        <label className="flex flex-col text-sm">
+        </Label>
+        <Label className="flex flex-col gap-1">
           Preço máx. (ETH)
-          <input
+          <Input
             inputMode="decimal"
-            className="border rounded px-2 py-1 w-28"
+            className="w-28"
             value={maxText}
             aria-invalid={bad(maxText)}
             onChange={(e) => setMaxText(e.target.value)}
             onBlur={(e) => commit('max', e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && commit('max', maxText)}
           />
-        </label>
+        </Label>
         <label className="flex items-center gap-1 text-sm">
           <input type="checkbox" checked={!!available} onChange={(e) => setFilters({ available: e.target.checked ? true : undefined })} />
           Somente disponíveis
         </label>
-        <label className="flex flex-col text-sm">
+        <Label className="flex flex-col gap-1">
           Ordenar por
-          <select className="border rounded px-2 py-1" value={sort ?? ''} onChange={(e) => setFilters({ sort: SORTS.find((x) => x === e.target.value) })}>
+          <select className="flex h-9 rounded-md border border-input bg-transparent px-3 py-1 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring" value={sort ?? ''} onChange={(e) => setFilters({ sort: SORTS.find((x) => x === e.target.value) })}>
             <option value="">Padrão</option>
             <option value="price-asc">Preço: menor primeiro</option>
             <option value="price-desc">Preço: maior primeiro</option>
             <option value="name">Nome</option>
           </select>
-        </label>
+        </Label>
       </div>
       {(bad(minText) || bad(maxText)) && <p role="alert">Informe preços decimais válidos (ex.: 0.50)</p>}
       {rangeInverted && <p role="alert">O preço mínimo é maior que o máximo</p>}
@@ -169,9 +175,9 @@ export function HomePage() {
       {isError && (
         <div role="alert" data-testid="catalog-error">
           <p>Erro ao carregar NFTs</p>
-          <button type="button" className="border rounded px-3 py-1 mt-2" onClick={() => void refetch()}>
+          <Button type="button" variant="outline" className="mt-2" onClick={() => void refetch()}>
             Tentar novamente
-          </button>
+          </Button>
         </div>
       )}
       {data && data.items.length === 0 && <p data-testid="catalog-empty">Nenhum NFT encontrado</p>}
@@ -190,15 +196,15 @@ export function HomePage() {
       )}
       {data && data.total > 0 && (
         <nav aria-label="Paginação" className="flex items-center gap-3 mt-4">
-          <button type="button" className="border rounded px-3 py-1 disabled:opacity-40" disabled={page <= 1} onClick={() => setPage(page - 1)}>
+          <Button type="button" variant="outline" disabled={page <= 1} onClick={() => setPage(page - 1)}>
             Anterior
-          </button>
+          </Button>
           <span data-testid="page-indicator" aria-live="polite">
             Página {page} de {pages}
           </span>
-          <button type="button" className="border rounded px-3 py-1 disabled:opacity-40" disabled={page >= pages} onClick={() => setPage(page + 1)}>
+          <Button type="button" variant="outline" disabled={page >= pages} onClick={() => setPage(page + 1)}>
             Próxima
-          </button>
+          </Button>
         </nav>
       )}
     </section>
