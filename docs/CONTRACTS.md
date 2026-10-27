@@ -20,7 +20,7 @@ Base: `/api` (Axios `baseURL`, `VITE_API_URL`). Auth: `Authorization: Bearer <to
 GET /favorites -> `string[]`. POST /favorites `{nftId}` -> 201 lista. DELETE /favorites/:nftId -> 200 lista. 401 `SESSION_EXPIRED`; 503 `TRANSIENT` quando `/__mock/favorites-error` está ativo.
 
 ## Perfil (auth)
-GET /profile -> User. PATCH /profile `{name?,avatar?(URL http/https)}` -> User; 422. PUT /profile/password `{currentPassword,newPassword>=8}` -> 204; 422 (`currentPassword`/`newPassword`). Upload de avatar real não existe (só URL).
+GET /profile -> User. PATCH /profile `{name?,avatar?}` -> User; 422. `avatar` aceita URL http/https ou data URI `data:image/*;base64,...` (upload feito no cliente; limite de ~1 MB, 1.400.000 caracteres; fora disso 422 em `errors.avatar`). PUT /profile/password `{currentPassword,newPassword>=8}` -> 204; 422 (`currentPassword`/`newPassword`).
 
 ## Carteiras (auth)
 GET /wallets -> `Wallet[]{id,label,address,role:'primary'|'secondary'}`. POST /wallets `{label,address 0x+40hex}` -> 201 Wallet (a 1a é primary); 422 (duplicada, limite de 2). PATCH /wallets/:id `{label?,address?,primary?}` -> 200 lista; 404 `NOT_FOUND`; 422.
@@ -42,10 +42,35 @@ GET /quote?network=ethereum|polygon|base -> `Quote{quoteId,version,network,items
   - Mesma chave + mesmo corpo -> devolve o mesmo pedido; corpo diferente -> 409 `IDEMPOTENCY_CONFLICT`.
   - 422 `VALIDATION_ERROR` (+`fields`); 409 `ORDER_PENDING` (+orderId); 422 `WALLET_REJECTED` (cenário); 409 `AVAILABILITY_CONFLICT` (+quote); 409 `QUOTE_STALE` (+quote); 504 `GATEWAY_TIMEOUT` (cenário `payment-timeout`, pedido já criado); 201 Order.
   - `Order{id,userId,status:'pending'|'confirmed'|'declined',version,createdAt,items,subtotal,discount,networkFee,total,coupon,network,walletId,collector,txHash?,explorerUrl?}` (snapshot copiado da cotação). txHash/explorer simulados.
-- Controle de mock: POST /__mock/orders/:id/confirm e /decline.
+- Controle de mock: POST /__mock/orders/:id/confirm, /decline e /event (seção abaixo).
 
 ## Endpoints de controle do mock (não são contrato de produção)
-POST /__mock/scenario `{scenario}` (default, empty, http-500, slow, variable-latency, network-error e cenários de pagamento); /__mock/reset; /__mock/session/expire; /__mock/favorites-error `{enabled}`; /__mock/nfts/:id/update `{price?,available?}` (incrementa versão e emite `nft.updated`); /__mock/nfts/:id/event `{version?,eventId?}` (reemite, para duplicata/antigo); /__mock/socket/disconnect; GET /__mock/socket/clients.
+POST /__mock/scenario `{scenario}` (default, empty, http-500, slow, variable-latency, network-error e cenários de pagamento); /__mock/reset; /__mock/session/expire; /__mock/favorites-error `{enabled}`; /__mock/nfts/:id/update `{price?,available?}` (incrementa versão e emite `nft.updated`); /__mock/nfts/:id/event `{version?,eventId?}` (reemite, para duplicata/antigo); /__mock/orders/:id/confirm e /decline; /__mock/orders/:id/event (abaixo); /__mock/socket/disconnect; GET /__mock/socket/clients.
+
+### POST /api/__mock/orders/:id/event
+Reemite `order.updated` do pedido pelo servidor Socket.IO simulado, sem alterar o pedido nem o carrinho. Serve para testar duplicata e evento antigo/fora de ordem (EARS-04 de `docs/pedido-unico-sem-duplicidade-spec.md`; usado em `tests/e2e/pedido-unico.spec.ts`). Foi acrescentado na implementação da semana 6; não está no enunciado nem na spec.
+
+| Item | Valor |
+|---|---|
+| Body (todos opcionais) | `{version?: number, eventId?: string, status?: 'pending'\|'confirmed'\|'declined'}` |
+| Padrões | `version` = versão atual do pedido; `eventId` = `<orderId>-replay-<Date.now()>`; `status` = status atual |
+| Resposta 200 | o evento emitido `{eventId, resource:'order', id, userId, version, status}` |
+| Erro | 404 `NOT_FOUND` (`pedido não encontrado`) se o id não existe |
+| Entrega | `order.updated` só às subscriptions do dono (`userId` do pedido); o cliente descarta `eventId` repetido e `version` menor ou igual à já aplicada |
+
+Observações: o evento é fabricado com os valores do body, então um `status` diferente do real é emitido assim mesmo (o app só invalida queries e relê o pedido por REST, que continua a fonte da verdade). `/confirm` e `/decline` só têm efeito em pedido `pending` (`settle` ignora pedidos terminais) e devolvem o pedido atual.
+
+### Cenários de erro HTTP genéricos (mock)
+`GET|POST|PUT|PATCH|DELETE /api/__mock/status/:code` responde sempre com o status pedido e corpo fixo (determinístico, sem estado):
+| code | corpo |
+|---|---|
+| 400 | `{code:'BAD_REQUEST', message}` |
+| 401 | `{code:'UNAUTHENTICATED', message}` (com token ativo o interceptor encerra a sessão e redireciona ao login) |
+| 403 | `{code:'FORBIDDEN', message}` |
+| 404 | `{code:'NOT_FOUND', message}` |
+| 409 | `{code:'CONFLICT', message}` |
+| 422 | `{code:'VALIDATION_ERROR', message, errors:{campo:msg}}` |
+Outro código => 400 `UNSUPPORTED_STATUS`. Timeout do cliente: `VITE_API_TIMEOUT_MS` (ms, padrão 15000); ao estourar, o Axios rejeita com `ECONNABORTED` (não há resposta fictícia no cliente).
 
 ## Socket.IO (path /socket.io, namespace /, websocket)
 Cliente -> servidor: `subscribe {token}` (resolve usuário; token inválido = anônimo), `unsubscribe`.

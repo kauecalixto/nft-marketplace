@@ -3,7 +3,7 @@
 **Feature Branch**: `001-quantity-limit` (nome lógico; nenhum branch git criado)
 **Created**: 2026-10-21
 **Status**: Draft (feature já implementada; spec derivada dos artefatos existentes)
-**Input**: "limite de quantidade por edição no detalhe do NFT" (fontes: docs/quantity-limit-spec.md, docs/adr/0001-limite-quantidade-edicao.md, RESEARCH.md R-01..R-05, GLOSSARIO.md, constituição)
+**Input**: "limite de quantidade por edição no detalhe do NFT" (fontes: docs/semana-5-quantity-limit/quantity-limit-spec.md, docs/semana-5-quantity-limit/ADR-0001-limite-quantidade-edicao.md, RESEARCH.md R-01..R-05, GLOSSARIO.md, constituição)
 
 ## User Scenarios & Testing *(mandatory)*
 

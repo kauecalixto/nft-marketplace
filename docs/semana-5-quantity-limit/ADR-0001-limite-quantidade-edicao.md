@@ -24,4 +24,4 @@ O colecionador precisa ser impedido de pedir mais unidades do que a edição per
 - Disponibilidade pode mudar durante a navegação; a reconciliação via `nft.updated` fica fora desta feature.
 
 ## Requisitos relacionados
-EARS-01 a EARS-05 em `docs/quantity-limit-spec.md`.
+EARS-01 a EARS-05 em `docs/semana-5-quantity-limit/quantity-limit-spec.md`.

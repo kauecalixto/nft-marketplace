@@ -1,6 +1,6 @@
 # Glossário de domínio
 
-Fonte: `docs/ENUNCIADO.md` (seções 1–12 do enunciado do desafio). Projeto novo, ainda sem código: as pastas abaixo são **previstas**, não existentes.
+Fonte: `docs/ENUNCIADO.md` (seções 1–12 do enunciado do desafio). O glossário nasceu antes do código; hoje as pastas abaixo existem em `src/` e o rótulo "Pasta prevista" indica a divisão planejada, já implementada.
 
 ## Bounded Context 1: Catálogo
 - Pasta prevista: `src/catalog/`
