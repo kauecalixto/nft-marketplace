@@ -8,6 +8,14 @@ export type Scenario =
   | 'default' | 'empty' | 'http-500' | 'slow' | 'variable-latency' | 'network-error'
   | 'payment-declined' | 'payment-pending' | 'payment-held' | 'payment-timeout' | 'stale-quote' | 'wallet-rejected'
 const PAGE_SIZE = 6
+const HTTP_ERROR_SCENARIOS: Record<number, Record<string, unknown>> = {
+  400: { code: 'BAD_REQUEST', message: 'Requisição inválida.' },
+  401: { code: 'UNAUTHENTICATED', message: 'Sessão ausente ou expirada.' },
+  403: { code: 'FORBIDDEN', message: 'Sem permissão para este recurso.' },
+  404: { code: 'NOT_FOUND', message: 'Recurso não encontrado.' },
+  409: { code: 'CONFLICT', message: 'Conflito com o estado atual do recurso.' },
+  422: { code: 'VALIDATION_ERROR', message: 'Dados inválidos.', errors: { campo: 'Valor inválido.' } },
+}
 // O cenário de catálogo persiste em localStorage para sobreviver a refresh; o reset o limpa.
 const SCENARIO_KEY = 'nft-marketplace:scenario'
 function loadScenario(): Scenario {
@@ -40,6 +48,13 @@ export const handlers = [
       setPurchaseScenario('default')
     }
     return HttpResponse.json({ scenario })
+  }),
+  // Erros HTTP genéricos e determinísticos para testar tratamento de 4xx (corpo no formato padrão { code, message }).
+  http.all('/api/__mock/status/:code', ({ params }) => {
+    const code = Number(params.code)
+    const body = HTTP_ERROR_SCENARIOS[code]
+    if (!body) return HttpResponse.json({ code: 'UNSUPPORTED_STATUS', message: 'Use 400, 401, 403, 404, 409 ou 422.' }, { status: 400 })
+    return HttpResponse.json(body, { status: code })
   }),
   http.post('/api/__mock/reset', () => {
     state.scenario = 'default'

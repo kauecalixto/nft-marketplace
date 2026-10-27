@@ -2,7 +2,11 @@ import axios from 'axios'
 import { TOKEN_KEY } from './mocks/shared'
 import { queryClient } from './queryClient'
 
-export const api = axios.create({ baseURL: import.meta.env.VITE_API_URL ?? '/api' })
+// Timeout por requisição (ms), configurável por VITE_API_TIMEOUT_MS; inválido/ausente => 15 s. Ao estourar, o Axios rejeita (ECONNABORTED).
+const parsedTimeout = Number(import.meta.env.VITE_API_TIMEOUT_MS)
+export const API_TIMEOUT_MS = Number.isFinite(parsedTimeout) && parsedTimeout > 0 ? parsedTimeout : 15_000
+
+export const api = axios.create({ baseURL: import.meta.env.VITE_API_URL ?? '/api', timeout: API_TIMEOUT_MS })
 
 export const getToken = () => {
   try {
@@ -16,9 +20,12 @@ export const subscribeToken = (fn: () => void) => {
   listeners.add(fn)
   return () => void listeners.delete(fn)
 }
+// Evento de troca de token na MESMA aba (o `storage` nativo só dispara em outras abas).
+export const TOKEN_CHANGED = 'nft:token-changed'
 export const setToken = (t: string | null) => {
   writeToken(t)
   listeners.forEach((fn) => fn())
+  if (typeof window !== 'undefined') window.dispatchEvent(new Event(TOKEN_CHANGED))
 }
 const writeToken = (t: string | null) => {
   try {
@@ -45,6 +52,7 @@ api.interceptors.response.use(undefined, (error: unknown) => {
     if (getToken() && !window.location.pathname.startsWith('/login')) {
       sessionExpiryHooks.forEach((fn) => { try { fn() } catch { /* ignore */ } })
       setToken(null)
+      void queryClient.cancelQueries()
       queryClient.clear()
       window.location.assign(`/login?redirect=${encodeURIComponent(here)}&expired=true`)
     }

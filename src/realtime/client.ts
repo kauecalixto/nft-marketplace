@@ -1,5 +1,6 @@
 import type { QueryClient } from '@tanstack/react-query'
 import { io, type Socket } from 'socket.io-client'
+import { TOKEN_CHANGED } from '../api'
 import { TOKEN_KEY } from '../mocks/shared'
 import { noticeStore } from './store'
 
@@ -7,7 +8,7 @@ interface NftEvt { eventId: string; resource: 'nft'; id: string; version: number
 interface OrderEvt { eventId: string; resource: 'order'; id: string; userId: string; version: number }
 
 const RECONCILE_KEYS = [['nfts'], ['nft'], ['cart'], ['quote'], ['order'], ['orders']]
-export const TOKEN_CHANGED = 'nft:token-changed'
+export { TOKEN_CHANGED }
 
 function token(): string | null {
   try { return localStorage.getItem(TOKEN_KEY) } catch { return null }
@@ -55,7 +56,7 @@ export function startRealtime(qc: QueryClient): () => void {
     invalidate([['orders'], ['order'], ['order', e.id]])
   })
 
-  const onTokenChange = () => {
+  const onTokenChange = (ev: Event) => {
     const t = token()
     if (t === currentToken) return
     currentToken = t
@@ -63,7 +64,11 @@ export function startRealtime(qc: QueryClient): () => void {
     versions.clear()
     noticeStore.reset()
     if (socket.connected) subscribe()
-    invalidate(RECONCILE_KEYS)
+    if (ev.type === 'storage') {
+      // Outra aba trocou de usuário: descarta dados privados do anterior (a própria aba já limpa em startSession/logout).
+      void qc.cancelQueries()
+      qc.clear()
+    } else invalidate(RECONCILE_KEYS)
   }
   window.addEventListener('storage', onTokenChange)
   window.addEventListener(TOKEN_CHANGED, onTokenChange)

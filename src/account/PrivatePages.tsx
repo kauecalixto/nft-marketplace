@@ -4,6 +4,9 @@ import { api } from '../api'
 import { Field } from './Field'
 import { AvatarUpload } from './AvatarUpload'
 import { Button } from '../components/ui/button'
+import { Skeleton } from '../components/ui/skeleton'
+import { Avatar } from '../components/Avatar'
+import { CheckCircleIcon, WalletIcon } from '../components/icons'
 import { apiErrors, useSession, type FieldErrors, type User } from './session'
 
 const ADDRESS = /^0x[0-9a-fA-F]{40}$/
@@ -11,9 +14,17 @@ interface Wallet { id: string; label: string; address: string; role: 'primary' |
 
 export function ProfilePage() {
   const { data: user } = useSession()
-  if (!user) return <p>Carregando...</p>
+  if (!user)
+    return (
+      <div data-testid="skeleton-profile" role="status" aria-busy="true" aria-label="Carregando perfil" className="space-y-3 max-w-sm">
+        <Skeleton className="h-8 w-40" />
+        <Skeleton className="h-9 w-full" />
+        <Skeleton className="h-9 w-full" />
+        <Skeleton className="h-9 w-32" />
+      </div>
+    )
   return (
-    <div className="space-y-8">
+    <div className="mx-auto grid max-w-5xl grid-cols-[minmax(0,1fr)] items-start gap-6 lg:grid-cols-2">
       <ProfileForm key={user.id + user.name + user.avatar} user={user} />
       <AvatarUpload />
       <PasswordForm />
@@ -44,16 +55,20 @@ function ProfileForm({ user }: { user: User }) {
     if (!Object.keys(errs).length) m.mutate({ name, avatar })
   }
   return (
-    <form onSubmit={submit} noValidate className="space-y-3 max-w-sm" aria-labelledby="profile-title">
-      <h1 id="profile-title" className="text-2xl font-bold">Perfil</h1>
-      <p>{user.email}</p>
-      {user.avatar && <img src={user.avatar} alt="Avatar" className="w-16 h-16" />}
+    <form onSubmit={submit} noValidate className="card space-y-4 p-6 sm:p-8 lg:row-span-2" aria-labelledby="profile-title">
+      <div className="flex items-center gap-4">
+        {user.avatar ? <img src={user.avatar} alt="Avatar" className="size-16 rounded-full object-cover" /> : <Avatar name={user.name} className="size-16 text-xl" />}
+        <div className="min-w-0">
+          <h1 id="profile-title" className="text-3xl font-extrabold">Perfil</h1>
+          <p className="break-all text-sm text-muted-foreground">{user.email}</p>
+        </div>
+      </div>
       <Field id="name" label="Nome" defaultValue={user.name} error={errors.name} />
       <Field id="avatar" label="URL do avatar" defaultValue={user.avatar} error={errors.avatar} />
       <Button type="submit" disabled={m.isPending}>
         Salvar perfil
       </Button>
-      {m.isSuccess && <p role="status">Perfil atualizado</p>}
+      {m.isSuccess && <p role="status" className="flex items-center gap-2 text-sm font-semibold text-success"><CheckCircleIcon className="size-5" />Perfil atualizado</p>}
     </form>
   )
 }
@@ -78,14 +93,14 @@ function PasswordForm() {
     if (!Object.keys(errs).length) m.mutate({ currentPassword, newPassword }, { onSuccess: () => form.reset() })
   }
   return (
-    <form onSubmit={submit} noValidate className="space-y-3 max-w-sm" aria-labelledby="password-title">
+    <form onSubmit={submit} noValidate className="card space-y-4 p-6 sm:p-8" aria-labelledby="password-title">
       <h2 id="password-title" className="text-xl font-bold">Alterar senha</h2>
       <Field id="currentPassword" label="Senha atual" type="password" autoComplete="current-password" error={errors.currentPassword} />
       <Field id="newPassword" label="Nova senha" type="password" autoComplete="new-password" error={errors.newPassword} />
       <Button type="submit" disabled={m.isPending}>
         Alterar senha
       </Button>
-      {m.isSuccess && <p role="status">Senha alterada</p>}
+      {m.isSuccess && <p role="status" className="flex items-center gap-2 text-sm font-semibold text-success"><CheckCircleIcon className="size-5" />Senha alterada</p>}
     </form>
   )
 }
@@ -115,9 +130,9 @@ function WalletRow({ wallet: w, queryKey, onPrimary }: { wallet: Wallet; queryKe
     if (!Object.keys(errs).length) save.mutate({ label, address })
   }
   return (
-    <li data-testid="wallet-item" className="border p-2 min-w-0 break-words [overflow-wrap:anywhere] flex flex-wrap items-center gap-2">
+    <li data-testid="wallet-item" className="card min-w-0 break-words [overflow-wrap:anywhere] flex flex-wrap items-center gap-x-3 gap-y-1 p-4">
       {editing ? (
-        <form onSubmit={submit} noValidate className="space-y-3 max-w-sm" aria-label={`Editar carteira ${w.label}`}>
+        <form onSubmit={submit} noValidate className="w-full max-w-md space-y-4" aria-label={`Editar carteira ${w.label}`}>
           <Field id={`label-${w.id}`} label="Apelido" defaultValue={w.label} error={errors.label} />
           <Field id={`address-${w.id}`} label="Endereço" defaultValue={w.address} error={errors.address} />
           <Button type="submit" disabled={save.isPending}>
@@ -137,7 +152,7 @@ function WalletRow({ wallet: w, queryKey, onPrimary }: { wallet: Wallet; queryKe
         </form>
       ) : (
         <>
-          <strong className="break-words">{w.label}</strong> ({w.role === 'primary' ? 'principal' : 'secundária'}) <code className="break-all">{w.address}</code>
+          <WalletIcon className="size-5 shrink-0 text-primary" /><strong className="break-words">{w.label}</strong> ({w.role === 'primary' ? 'principal' : 'secundária'}) <code className="break-all rounded bg-secondary px-1.5 py-0.5 text-xs">{w.address}</code>
           {w.role !== 'primary' && (
             <Button type="button" variant="link" size="sm" onClick={onPrimary} className="ml-2">
               Tornar principal
@@ -187,17 +202,22 @@ export function WalletsPage() {
     if (!Object.keys(errs).length) add.mutate({ label, address }, { onSuccess: () => form.reset() })
   }
   return (
-    <div className="space-y-6">
-      <h1 className="text-2xl font-bold">Carteiras</h1>
-      {isLoading && <p>Carregando...</p>}
-      {error && <p role="alert">Erro ao carregar carteiras</p>}
-      {wallets && wallets.length === 0 && <p data-testid="wallets-empty">Nenhuma carteira cadastrada</p>}
+    <div className="mx-auto max-w-3xl space-y-6">
+      <h1 className="text-3xl font-extrabold">Carteiras</h1>
+      {isLoading && (
+        <ul data-testid="skeleton-wallets" role="status" aria-busy="true" aria-label="Carregando carteiras" className="space-y-2">
+          <li><Skeleton className="h-6 w-full max-w-lg" /></li>
+          <li><Skeleton className="h-6 w-full max-w-lg" /></li>
+        </ul>
+      )}
+      {error && <p role="alert" className="card border-red-200 bg-red-50 p-4 font-semibold text-destructive">Erro ao carregar carteiras</p>}
+      {wallets && wallets.length === 0 && <p data-testid="wallets-empty" className="card p-6 text-center text-muted-foreground">Nenhuma carteira cadastrada</p>}
       <ul className="space-y-2 min-w-0">
         {wallets?.map((w) => (
           <WalletRow key={w.id} wallet={w} queryKey={key} onPrimary={() => makePrimary.mutate(w.id)} />
         ))}
       </ul>
-      <form onSubmit={submit} noValidate className="space-y-3 max-w-sm" aria-labelledby="wallet-form-title">
+      <form onSubmit={submit} noValidate className="card max-w-md space-y-4 p-6" aria-labelledby="wallet-form-title">
         <h2 id="wallet-form-title" className="text-xl font-bold">Adicionar carteira</h2>
         <Field id="label" label="Apelido" error={errors.label} />
         <Field id="address" label="Endereço" error={errors.address} />

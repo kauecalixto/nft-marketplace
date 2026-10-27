@@ -8,6 +8,7 @@ import { Input } from '../components/ui/input'
 import { Label } from '../components/ui/label'
 import { Badge } from '../components/ui/badge'
 import { Skeleton } from '../components/ui/skeleton'
+import { AlertIcon, SearchIcon, SparkleIcon } from '../components/icons'
 import type { Nft, NftPage } from './types'
 
 export const SORTS = ['price-asc', 'price-desc', 'name'] as const
@@ -36,14 +37,26 @@ export function validateCatalogSearch(s: Record<string, unknown>): CatalogSearch
   }
 }
 
+const PAGE_SIZE = 6 // mesmo pageSize da API (src/mocks/handlers.ts)
+
+function NftArt({ nft, className = '' }: { nft: Nft; className?: string }) {
+  return (
+    <span className={`block overflow-hidden rounded-xl bg-secondary ${className}`}>
+      <img src={nft.image} alt={nft.name} width={400} height={400} loading="lazy" className="nft-img block aspect-square w-full" />
+    </span>
+  )
+}
+
 function CardsSkeleton() {
   return (
-    <ul data-testid="skeleton-catalog" aria-busy="true" aria-label="Carregando catálogo" className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-      {Array.from({ length: 6 }, (_, i) => (
-        <li key={i} data-testid="skeleton-card" className="border rounded p-3">
-          <Skeleton className="w-full aspect-square" />
-          <Skeleton className="h-6 w-3/4 mt-2" />
-          <Skeleton className="h-5 w-1/2 mt-2" />
+    <ul data-testid="skeleton-catalog" aria-busy="true" aria-label="Carregando catálogo" className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
+      {Array.from({ length: PAGE_SIZE }, (_, i) => (
+        <li key={i} data-testid="skeleton-card" className="card min-w-0 p-3">
+          <Skeleton className="aspect-square w-full rounded-xl" />
+          <div className="px-1 pb-1 pt-3">
+            <Skeleton className="my-1 h-4 w-3/4" />
+            <Skeleton className="my-1 h-4 w-1/2" />
+          </div>
         </li>
       ))}
     </ul>
@@ -57,26 +70,35 @@ function Featured() {
   })
   if (!isLoading && (!data || data.length === 0)) return null
   return (
-    <section aria-labelledby="featured-title" className="mb-6">
-      <h2 id="featured-title" className="text-xl font-bold mb-2">Destaques</h2>
+    <section aria-labelledby="featured-title" className="mb-10">
+      <div className="mb-4 flex items-center gap-2">
+        <SparkleIcon className="size-6 text-primary" />
+        <h2 id="featured-title" className="text-2xl font-bold">Destaques</h2>
+      </div>
       {isLoading ? (
-        <ul data-testid="skeleton-featured" aria-busy="true" aria-label="Carregando destaques" className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <ul data-testid="skeleton-featured" aria-busy="true" aria-label="Carregando destaques" className="grid grid-cols-1 gap-5 sm:grid-cols-3">
           {Array.from({ length: 3 }, (_, i) => (
-            <li key={i} className="border rounded p-3">
-              <Skeleton className="w-full aspect-square" />
-              <Skeleton className="h-6 w-3/4 mt-2" />
+            <li key={i} className="card min-w-0 p-3">
+              <Skeleton className="aspect-square w-full rounded-xl" />
+              <div className="px-1 pb-1 pt-3">
+                <Skeleton className="h-[22px] w-24" />
+                <Skeleton className="my-1 h-4 w-3/4" />
+                <Skeleton className="my-1 h-4 w-1/2" />
+              </div>
             </li>
           ))}
         </ul>
       ) : (
-        <ul className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <ul className="grid grid-cols-1 gap-5 sm:grid-cols-3">
           {data?.map((n) => (
-            <li key={n.id} data-testid="featured-card" className="border rounded p-3 min-w-0">
-              <Link to="/nfts/$id" params={{ id: n.id }}>
-                <img src={n.image} alt={n.name} className="w-full aspect-square" />
-                <Badge variant="secondary" className="mt-2">Em destaque</Badge>
-                <h3 className="font-semibold break-words">{n.name}</h3>
-                <p>{n.price} ETH</p>
+            <li key={n.id} data-testid="featured-card" className="card nft-card min-w-0 p-3">
+              <Link to="/nfts/$id" params={{ id: n.id }} className="block no-underline text-foreground">
+                <NftArt nft={n} />
+                <span className="block px-1 pb-1 pt-3">
+                  <Badge variant="secondary">Em destaque</Badge>
+                  <h3 className="break-words text-lg font-semibold">{n.name}</h3>
+                  <p className="num text-base font-bold text-primary">{n.price} ETH</p>
+                </span>
               </Link>
             </li>
           ))}
@@ -106,6 +128,7 @@ export function HomePage() {
   }
   const bad = (v: string) => v !== '' && !DECIMAL.test(v.trim())
   const rangeInverted = !bad(minText) && !bad(maxText) && minText !== '' && maxText !== '' && parseEth(minText) > parseEth(maxText)
+  const priceError = bad(minText) || bad(maxText) || rangeInverted
   const commit = (key: 'min' | 'max', v: string) => {
     if (bad(v)) return
     const val = v.trim() || undefined
@@ -122,46 +145,61 @@ export function HomePage() {
 
   return (
     <section>
+      <div className="relative mb-8 overflow-hidden rounded-[1.75rem] bg-linear-to-br from-indigo-700 via-primary to-violet-700 px-6 py-10 text-white shadow-lift sm:px-10 sm:py-14">
+        <div aria-hidden="true" className="pointer-events-none absolute -right-16 -top-20 size-72 rounded-full bg-white/10 blur-2xl" />
+        <div aria-hidden="true" className="pointer-events-none absolute -bottom-24 left-1/3 size-72 rounded-full bg-fuchsia-400/20 blur-3xl" />
+        <p className="mb-3 inline-flex items-center gap-1.5 rounded-full bg-white/15 px-3 py-1 text-xs font-semibold uppercase tracking-wide">
+          <SparkleIcon className="size-4" /> Coleções digitais
+        </p>
+        <h1 className="max-w-2xl text-3xl font-extrabold leading-tight sm:text-5xl">Catálogo de NFTs</h1>
+        <p className="mt-3 max-w-xl text-base text-indigo-50 sm:text-lg">Descubra, compare e colecione obras digitais únicas com preço e disponibilidade em tempo real.</p>
+      </div>
       <Featured />
-      <div className="flex flex-wrap gap-3 items-end mb-4">
-        <Input
-          aria-label="Buscar NFT"
-          placeholder="Buscar"
-          className="w-48 max-w-full"
-          value={q ?? ''}
-          onChange={(e) => setFilters({ q: e.target.value || undefined }, true)}
-        />
-        <Label className="flex flex-col gap-1">
+      <h2 className="mb-4 text-2xl font-bold">Todos os NFTs</h2>
+      <div className="card mb-6 flex flex-wrap items-end gap-4 p-4 sm:p-5">
+        <div className="relative w-full sm:w-56">
+          <SearchIcon className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+          <Input
+            aria-label="Buscar NFT"
+            placeholder="Buscar"
+            className="pl-9"
+            value={q ?? ''}
+            onChange={(e) => setFilters({ q: e.target.value || undefined }, true)}
+          />
+        </div>
+        <Label className="flex min-w-0 max-w-full flex-col gap-1.5">
           Preço mín. (ETH)
           <Input
             inputMode="decimal"
             className="w-28"
             value={minText}
             aria-invalid={bad(minText)}
+            aria-describedby={priceError ? 'price-error' : undefined}
             onChange={(e) => setMinText(e.target.value)}
             onBlur={(e) => commit('min', e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && commit('min', minText)}
           />
         </Label>
-        <Label className="flex flex-col gap-1">
+        <Label className="flex min-w-0 max-w-full flex-col gap-1.5">
           Preço máx. (ETH)
           <Input
             inputMode="decimal"
             className="w-28"
             value={maxText}
             aria-invalid={bad(maxText)}
+            aria-describedby={priceError ? 'price-error' : undefined}
             onChange={(e) => setMaxText(e.target.value)}
             onBlur={(e) => commit('max', e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && commit('max', maxText)}
           />
         </Label>
-        <label className="flex items-center gap-1 text-sm">
-          <input type="checkbox" checked={!!available} onChange={(e) => setFilters({ available: e.target.checked ? true : undefined })} />
+        <Label className="flex h-10 cursor-pointer items-center gap-2 text-sm">
+          <input type="checkbox" className="size-5 accent-primary" checked={!!available} onChange={(e) => setFilters({ available: e.target.checked ? true : undefined })} />
           Somente disponíveis
-        </label>
-        <Label className="flex flex-col gap-1">
+        </Label>
+        <Label className="flex min-w-0 max-w-full flex-col gap-1.5">
           Ordenar por
-          <select className="flex h-9 rounded-md border border-input bg-transparent px-3 py-1 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring" value={sort ?? ''} onChange={(e) => setFilters({ sort: SORTS.find((x) => x === e.target.value) })}>
+          <select className="flex h-10 w-full rounded-control border border-input bg-surface px-3 py-1 text-sm shadow-sm outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/30" value={sort ?? ''} onChange={(e) => setFilters({ sort: SORTS.find((x) => x === e.target.value) })}>
             <option value="">Padrão</option>
             <option value="price-asc">Preço: menor primeiro</option>
             <option value="price-desc">Preço: maior primeiro</option>
@@ -169,37 +207,40 @@ export function HomePage() {
           </select>
         </Label>
       </div>
-      {(bad(minText) || bad(maxText)) && <p role="alert">Informe preços decimais válidos (ex.: 0.50)</p>}
-      {rangeInverted && <p role="alert">O preço mínimo é maior que o máximo</p>}
+      {(bad(minText) || bad(maxText)) && <p id="price-error" role="alert" className="mb-4 flex items-center gap-2 text-sm font-medium text-destructive"><AlertIcon className="size-4 shrink-0" />Informe preços decimais válidos (ex.: 0.50)</p>}
+      {rangeInverted && !(bad(minText) || bad(maxText)) && <p id="price-error" role="alert" className="mb-4 flex items-center gap-2 text-sm font-medium text-destructive"><AlertIcon className="size-4 shrink-0" />O preço mínimo é maior que o máximo</p>}
       {isLoading && <CardsSkeleton />}
       {isError && (
-        <div role="alert" data-testid="catalog-error">
-          <p>Erro ao carregar NFTs</p>
+        <div role="alert" data-testid="catalog-error" className="card flex flex-col items-start gap-2 border-red-200 bg-red-50 p-5 text-destructive">
+          <p className="flex items-center gap-2 font-semibold"><AlertIcon className="size-5" />Erro ao carregar NFTs</p>
           <Button type="button" variant="outline" className="mt-2" onClick={() => void refetch()}>
             Tentar novamente
           </Button>
         </div>
       )}
-      {data && data.items.length === 0 && <p data-testid="catalog-empty">Nenhum NFT encontrado</p>}
+      {data && data.items.length === 0 && <p data-testid="catalog-empty" className="card p-8 text-center text-muted-foreground">Nenhum NFT encontrado</p>}
       {data && (
-        <ul aria-busy={isPlaceholderData} className={`grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 ${isPlaceholderData ? 'opacity-60' : ''}`}>
+        <ul aria-busy={isPlaceholderData} className={`grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4 ${isPlaceholderData ? 'opacity-60' : ''}`}>
           {data.items.map((n) => (
-            <li key={n.id} data-testid="nft-card" className="border rounded p-3 min-w-0">
-              <Link to="/nfts/$id" params={{ id: n.id }}>
-                <img src={n.image} alt={n.name} className="w-full aspect-square" />
-                <h2 className="font-semibold break-words">{n.name}</h2>
-                <p>{n.price} ETH</p>
+            <li key={n.id} data-testid="nft-card" className="card nft-card relative min-w-0 p-3">
+              <Link to="/nfts/$id" params={{ id: n.id }} className="block no-underline text-foreground">
+                <NftArt nft={n} />
+                <span className="block px-1 pb-1 pt-3">
+                  <h2 className="break-words text-base font-semibold">{n.name}</h2>
+                  <p className="num font-bold text-primary">{n.price} ETH</p>
+                </span>
               </Link>
+              {n.edition.available <= 0 && <Badge variant="destructive" className="absolute left-5 top-5 bg-white shadow-sm">Indisponível</Badge>}
             </li>
           ))}
         </ul>
       )}
       {data && data.total > 0 && (
-        <nav aria-label="Paginação" className="flex items-center gap-3 mt-4">
+        <nav aria-label="Paginação" className="mt-8 flex flex-wrap items-center justify-center gap-3">
           <Button type="button" variant="outline" disabled={page <= 1} onClick={() => setPage(page - 1)}>
             Anterior
           </Button>
-          <span data-testid="page-indicator" aria-live="polite">
+          <span data-testid="page-indicator" aria-live="polite" className="num text-sm font-medium text-muted-foreground">
             Página {page} de {pages}
           </span>
           <Button type="button" variant="outline" disabled={page >= pages} onClick={() => setPage(page + 1)}>

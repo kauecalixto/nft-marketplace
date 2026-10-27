@@ -291,6 +291,15 @@ export const purchaseHandlers = [
     settle(o, 'confirmed')
     return HttpResponse.json(view(o))
   }),
+  // Reemite order.updated sem alterar o pedido (duplicata / evento antigo), como /__mock/nfts/:id/event.
+  http.post('/api/__mock/orders/:id/event', async ({ request, params }) => {
+    const o = S.orders.find((x) => x.id === params.id)
+    if (!o) return err(404, 'NOT_FOUND', 'pedido não encontrado')
+    const b = ((await request.json().catch(() => ({}))) ?? {}) as { version?: number; eventId?: string; status?: Order['status'] }
+    const evt = { eventId: b.eventId ?? `${o.id}-replay-${Date.now()}`, resource: 'order' as const, id: o.id, userId: o.userId, version: b.version ?? o.version, status: b.status ?? o.status }
+    emitters.orderUpdated(evt)
+    return HttpResponse.json(evt)
+  }),
   http.post('/api/__mock/orders/:id/decline', ({ params }) => {
     const o = S.orders.find((x) => x.id === params.id)
     if (!o) return err(404, 'NOT_FOUND', 'pedido não encontrado')

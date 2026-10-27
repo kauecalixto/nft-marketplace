@@ -1,7 +1,7 @@
 import { useEffect } from 'react'
-import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useQueryClient } from '@tanstack/react-query'
 import { useRouterState } from '@tanstack/react-router'
-import { api } from '../api'
+import { useCart } from '../purchase/queries'
 import { startRealtime } from './client'
 import { NftUpdateNotice } from './Notice'
 
@@ -14,11 +14,7 @@ export function RealtimeBridge() {
 }
 
 function CartNotice() {
-  const { data } = useQuery({
-    queryKey: ['cart'],
-    queryFn: async ({ signal }) => (await api.get('/cart', { signal })).data as unknown,
-  })
-  const items = Array.isArray(data) ? data : ((data as { items?: unknown[] } | undefined)?.items ?? [])
-  const ids = (items as { nftId?: string }[]).map((i) => i.nftId).filter((x): x is string => !!x)
+  const { data } = useCart()
+  const ids = (data ?? []).map((i) => i.nftId).filter((x): x is string => !!x)
   return <NftUpdateNotice nftIds={ids} />
 }

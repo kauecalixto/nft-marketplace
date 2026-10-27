@@ -4,6 +4,13 @@ import axios from 'axios'
 import { useSyncExternalStore } from 'react'
 import { api, getToken, setToken, subscribeToken } from '../api'
 import { queryClient } from '../queryClient'
+import { Avatar } from '../components/Avatar'
+import { buttonVariants } from '../components/ui/button'
+import { LoginIcon, LogoutIcon, UserIcon, WalletIcon } from '../components/icons'
+import { cn } from '../lib/utils'
+
+export const navLink = 'inline-flex h-10 items-center gap-2 rounded-control px-3 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground'
+export const navActive = { className: 'bg-accent text-accent-foreground', 'aria-current': 'page' as const }
 
 export interface User { id: string; email: string; name: string; avatar: string }
 export type FieldErrors = Record<string, string>
@@ -29,13 +36,21 @@ export function apiErrors(e: unknown): { fields: FieldErrors; message?: string; 
 }
 
 export function startSession(token: string, user: User) {
+  void queryClient.cancelQueries()
   queryClient.clear() // troca de usuário: descarta dados privados do anterior
   queryClient.setQueryData(sessionQuery.queryKey, user)
   setToken(token)
 }
 
 export function safeRedirect(r: unknown) {
-  return typeof r === 'string' && r.startsWith('/') && !r.startsWith('//') ? r : '/'
+  if (typeof r !== 'string' || !r.startsWith('/') || r.startsWith('//')) return '/'
+  // eslint-disable-next-line no-control-regex
+  if (r.includes('\\') || /[\u0000-\u001f\u007f]/.test(r)) return '/'
+  try {
+    return new URL(r, window.location.origin).origin === window.location.origin ? r : '/'
+  } catch {
+    return '/'
+  }
 }
 
 export function AccountNav() {
@@ -52,6 +67,7 @@ export function AccountNav() {
     },
     onSettled: () => {
       setToken(null)
+      void qc.cancelQueries()
       qc.clear()
       void navigate({ to: '/login', search: {} })
     },
@@ -59,18 +75,31 @@ export function AccountNav() {
   if (!getToken() || !user)
     return (
       <>
-        <Link to="/login" search={{}}>Entrar</Link>
-        <Link to="/register">Cadastrar</Link>
+        <Link to="/login" search={{}} className={navLink}>
+          <LoginIcon className="size-5" />
+          <span>Entrar</span>
+        </Link>
+        <Link to="/register" className={cn(buttonVariants({ size: 'sm' }), 'text-primary-foreground')}>Cadastrar</Link>
       </>
     )
   return (
     <>
-      <Link to="/profile">Perfil</Link>
-      <Link to="/wallets">Carteiras</Link>
-      <span data-testid="nav-user">{user.name}</span>
-      <button data-testid="logout" onClick={() => logout.mutate()} className="underline">
-        Sair
-      </button>
+      <Link to="/profile" className={navLink} activeProps={navActive}>
+        <UserIcon className="size-5" />
+        <span className="sr-only sm:not-sr-only">Perfil</span>
+      </Link>
+      <Link to="/wallets" className={navLink} activeProps={navActive}>
+        <WalletIcon className="size-5" />
+        <span className="sr-only sm:not-sr-only">Carteiras</span>
+      </Link>
+      <span className="flex items-center gap-2 sm:ml-1 sm:border-l sm:pl-3">
+        <Avatar name={user.name} src={user.avatar} />
+        <span data-testid="nav-user" className="max-w-20 truncate text-sm font-medium sm:max-w-40">{user.name}</span>
+        <button data-testid="logout" onClick={() => logout.mutate()} className={cn(navLink, 'px-2')}>
+          <LogoutIcon className="size-5" />
+          <span className="sr-only sm:not-sr-only">Sair</span>
+        </button>
+      </span>
     </>
   )
 }

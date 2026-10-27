@@ -3,6 +3,7 @@ import { useMutation } from '@tanstack/react-query'
 import { Link, useRouter, useSearch } from '@tanstack/react-router'
 import { api } from '../api'
 import { Button } from '../components/ui/button'
+import { AlertIcon, InfoIcon } from '../components/icons'
 import { Field } from './Field'
 import { apiErrors, safeRedirect, startSession, type FieldErrors, type User } from './session'
 
@@ -39,18 +40,21 @@ export function LoginPage() {
     if (Object.keys(errs).length === 0) login.mutate({ email, password })
   }
   return (
-    <form onSubmit={submit} noValidate className="space-y-3 max-w-sm" aria-labelledby="login-title">
-      <h1 id="login-title" className="text-2xl font-bold">Entrar</h1>
+    <form onSubmit={submit} noValidate className="card mx-auto w-full max-w-md space-y-4 p-6 sm:p-8" aria-labelledby="login-title">
+      <div>
+        <h1 id="login-title" className="text-3xl font-extrabold">Entrar</h1>
+        <p className="mt-1 text-sm text-muted-foreground">Acesse sua conta para comprar e acompanhar pedidos.</p>
+      </div>
       {(search.expired === true || search.expired === 'true') && (
-        <p role="status" data-testid="session-expired">Sua sessão expirou. Entre novamente para continuar.</p>
+        <p role="status" data-testid="session-expired" className="flex items-start gap-2 rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm font-semibold text-warning"><InfoIcon className="mt-0.5 size-4 shrink-0" />Sua sessão expirou. Entre novamente para continuar.</p>
       )}
       <Field id="email" label="E-mail" type="email" autoComplete="username" error={errors.email} />
       <Field id="password" label="Senha" type="password" autoComplete="current-password" error={errors.password} />
-      {general && <p role="alert" data-testid="login-error">{general}</p>}
-      <Button type="submit" disabled={login.isPending}>
+      {general && <p role="alert" data-testid="login-error" className="flex items-start gap-2 rounded-xl bg-red-50 p-3 text-sm font-semibold text-destructive"><AlertIcon className="mt-0.5 size-4 shrink-0" />{general}</p>}
+      <Button type="submit" size="lg" className="w-full" disabled={login.isPending}>
         Entrar
       </Button>
-      <p><Link to="/register">Criar conta</Link></p>
+      <p className="text-center text-sm text-muted-foreground">Ainda não tem conta? <Link to="/register" className="font-semibold text-primary underline">Criar conta</Link></p>
     </form>
   )
 }
@@ -87,13 +91,16 @@ export function RegisterPage() {
     if (Object.keys(errs).length === 0) register.mutate({ name, email, password })
   }
   return (
-    <form onSubmit={submit} noValidate className="space-y-3 max-w-sm" aria-labelledby="register-title">
-      <h1 id="register-title" className="text-2xl font-bold">Cadastro</h1>
+    <form onSubmit={submit} noValidate className="card mx-auto w-full max-w-md space-y-4 p-6 sm:p-8" aria-labelledby="register-title">
+      <div>
+        <h1 id="register-title" className="text-3xl font-extrabold">Cadastro</h1>
+        <p className="mt-1 text-sm text-muted-foreground">Crie sua conta em poucos segundos.</p>
+      </div>
       <Field id="name" label="Nome" autoComplete="name" error={errors.name} />
       <Field id="email" label="E-mail" type="email" autoComplete="username" error={errors.email} />
       <Field id="password" label="Senha" type="password" autoComplete="new-password" error={errors.password} />
-      {general && <p role="alert" data-testid="register-error">{general}</p>}
-      <Button type="submit" disabled={register.isPending}>
+      {general && <p role="alert" data-testid="register-error" className="flex items-start gap-2 rounded-xl bg-red-50 p-3 text-sm font-semibold text-destructive"><AlertIcon className="mt-0.5 size-4 shrink-0" />{general}</p>}
+      <Button type="submit" size="lg" className="w-full" disabled={register.isPending}>
         Cadastrar
       </Button>
     </form>

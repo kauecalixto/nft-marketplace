@@ -1,9 +1,93 @@
 @import "tailwindcss";
 
+/* ---------------------------------------------------------------------------
+   Design tokens (ver ARCHITECTURE.md > Design). Base clara, um acento indigo/violeta.
+   Contrastes calculados (WCAG 2.x): texto >= 4,5:1; bordas de controles >= 3:1.
+   --------------------------------------------------------------------------- */
+:root {
+  color-scheme: light;
+  --background: #f5f6fb;
+  --surface: #ffffff;
+  --foreground: #0f172a; /* 17,8:1 sobre --background */
+  --muted-foreground: #53607a; /* 5,9:1 sobre branco, 5,3:1 sobre --background */
+  --primary: #4338ca; /* 8,0:1 com texto branco */
+  --primary-2: #6d28d9;
+  --primary-foreground: #ffffff;
+  --secondary: #eef0fb;
+  --secondary-foreground: #312e81;
+  --accent: #eef0fb;
+  --accent-foreground: #312e81;
+  --destructive: #b91c1c;
+  --success: #15803d;
+  --warning: #b45309;
+  --border: #e3e6f0; /* divisorias decorativas */
+  --input: #7a869c; /* >= 3:1 sobre branco e sobre --background (WCAG 1.4.11) */
+  --ring: #4f46e5;
+  --radius-card: 1.25rem;
+  --radius-control: 0.75rem;
+  --shadow-sm: 0 1px 2px rgb(15 23 42 / 0.06), 0 1px 3px rgb(15 23 42 / 0.05);
+  --shadow-md: 0 4px 12px rgb(15 23 42 / 0.07), 0 2px 4px rgb(15 23 42 / 0.05);
+  --shadow-lg: 0 18px 40px -12px rgb(67 56 202 / 0.28), 0 6px 14px rgb(15 23 42 / 0.08);
+}
+@theme inline {
+  --color-background: var(--background);
+  --color-surface: var(--surface);
+  --color-foreground: var(--foreground);
+  --color-primary: var(--primary);
+  --color-primary-2: var(--primary-2);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --radius-card: var(--radius-card);
+  --radius-control: var(--radius-control);
+  --shadow-card: var(--shadow-sm);
+  --shadow-lift: var(--shadow-lg);
+  --shadow-pop: var(--shadow-md);
+  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Inter, Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+@layer base {
+  *, ::after, ::before { border-color: var(--border); }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    background:
+      radial-gradient(60rem 28rem at 85% -10%, rgb(99 102 241 / 0.10), transparent 60%),
+      radial-gradient(48rem 24rem at -10% 0%, rgb(139 92 246 / 0.08), transparent 55%),
+      var(--background);
+    background-attachment: fixed;
+    color: var(--foreground);
+    font-family: var(--font-sans);
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+  h1, h2, h3 { letter-spacing: -0.01em; text-wrap: balance; }
+  a { text-underline-offset: 3px; }
+  :focus-visible { outline: 3px solid var(--ring); outline-offset: 2px; border-radius: 6px; }
+  ::selection { background: rgb(99 102 241 / 0.25); }
+}
+
+@layer components {
+  .num { font-variant-numeric: tabular-nums; }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-card); box-shadow: var(--shadow-sm); }
+  .nft-card { transition: transform 0.18s ease, box-shadow 0.18s ease; }
+  .nft-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-lg); }
+  .nft-card .nft-img { transition: transform 0.35s ease; }
+  .nft-card:hover .nft-img { transform: scale(1.05); }
+}
+
 .skeleton {
-  background: linear-gradient(90deg, #e5e7eb 25%, #f3f4f6 50%, #e5e7eb 75%);
+  background: linear-gradient(90deg, #e6e9f5 25%, #f4f5fb 50%, #e6e9f5 75%);
   background-size: 200% 100%;
-  border-radius: 0.25rem;
+  border-radius: 0.5rem;
   animation: shimmer 1.2s linear infinite;
 }
 @keyframes shimmer {
@@ -12,34 +96,6 @@
 }
 @media (prefers-reduced-motion: reduce) {
   .skeleton { animation: none; }
-}
-
-/* shadcn/ui tokens (neutral) */
-:root {
-  --background: #ffffff;
-  --foreground: #0a0a0a;
-  --primary: #171717;
-  --primary-foreground: #fafafa;
-  --secondary: #f5f5f5;
-  --secondary-foreground: #171717;
-  --muted-foreground: #737373;
-  --accent: #f5f5f5;
-  --accent-foreground: #171717;
-  --destructive: #b91c1c;
-  --input: #d4d4d4;
-  --ring: #737373;
-}
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --color-primary: var(--primary);
-  --color-primary-foreground: var(--primary-foreground);
-  --color-secondary: var(--secondary);
-  --color-secondary-foreground: var(--secondary-foreground);
-  --color-muted-foreground: var(--muted-foreground);
-  --color-accent: var(--accent);
-  --color-accent-foreground: var(--accent-foreground);
-  --color-destructive: var(--destructive);
-  --color-input: var(--input);
-  --color-ring: var(--ring);
+  *, ::after, ::before { transition: none !important; }
+  .nft-card:hover, .nft-card:hover .nft-img { transform: none; }
 }
