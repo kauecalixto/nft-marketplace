@@ -1,18 +1,10 @@
-import { createRequire } from 'node:module'
 import js from '@eslint/js'
 import globals from 'globals'
 import reactHooks from 'eslint-plugin-react-hooks'
+import tseslint from 'typescript-eslint'
 
-// typescript-eslint ainda não suporta o TypeScript 7 (usado em `tsc -b`); no lint, o módulo
-// `typescript` é redirecionado para @typescript/typescript6 (API JS), sem alterar o typecheck.
-const require = createRequire(import.meta.url)
-const Module = require('node:module')
-const ts6 = require.resolve('@typescript/typescript6')
-const resolve = Module._resolveFilename
-Module._resolveFilename = function (request, ...rest) {
-  return request === 'typescript' ? ts6 : resolve.call(this, request, ...rest)
-}
-const { default: tseslint } = await import('typescript-eslint')
+// `typescript` é um alias para @typescript/typescript6 (API JS que o typescript-eslint suporta);
+// o compilador do `tsc -b` é o TypeScript 7, instalado como @typescript/native.
 
 export default tseslint.config(
   { ignores: ['dist', 'playwright-report', 'test-results', 'reports', 'public', 'node_modules'] },
