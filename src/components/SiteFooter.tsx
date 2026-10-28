@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from 'react'
-import { Link } from '@tanstack/react-router'
+import { Link, useRouterState } from '@tanstack/react-router'
 import { COLLECTIONS } from '../catalog/taxonomy'
 
 /**
@@ -51,8 +51,10 @@ function Newsletter() {
 const colTitle = 'mb-2 text-base font-bold text-foreground'
 
 export function SiteFooter() {
+  const path = useRouterState({ select: (st) => st.location.pathname })
+  const auth = path === '/login' || path === '/register' // tela cheia no mobile (Figma 09/13)
   return (
-    <footer className="mt-12 pb-6">
+    <footer className={`mt-12 pb-6 max-md:pb-28 ${auth ? 'max-sm:hidden' : ''}`}>
       <div className="mx-auto max-w-[1248px] px-4 sm:px-6">
         <div className="bg-surface">
           <div className="grid gap-y-6 px-4 py-8 sm:grid-cols-2 sm:px-8 lg:grid-cols-[repeat(3,1fr)_1.15fr]">

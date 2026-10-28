@@ -10,6 +10,7 @@ import { Label } from '../components/ui/label'
 import { Skeleton } from '../components/ui/skeleton'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogTitle } from '../components/ui/dialog'
 import { QuoteSummary } from './QuoteSummary'
+import { BackButton, mobileTitle } from '../components/BackButton'
 import { AlertIcon, CheckIcon, ClockIcon, InfoIcon, ShieldIcon } from '../components/icons'
 import { formatEth, mulInt, parseEth } from './eth'
 import type { Order, Quote } from './types'
@@ -179,7 +180,7 @@ export function CheckoutPage() {
     return (
       <section>
         <Breadcrumb />
-        <h1 className="section-title mb-6 text-base">Pagamento</h1>
+        <div className="relative mb-6"><BackButton to="/cart" /><h1 className={`section-title text-base ${mobileTitle}`}>Pagamento</h1></div>
         <div data-testid="skeleton-checkout" role="status" aria-busy="true" aria-label="Carregando pagamento" className={layoutCls}>
           <div className="grid content-start gap-x-6 gap-y-5 md:grid-cols-2">
             <Skeleton className="h-6 w-48 md:col-span-2" />
@@ -204,7 +205,7 @@ export function CheckoutPage() {
   return (
     <section>
       <Breadcrumb />
-      <h1 className="section-title mb-6 text-base">Pagamento</h1>
+      <div className="relative mb-6"><BackButton to="/cart" /><h1 className={`section-title text-base ${mobileTitle}`}>Pagamento</h1></div>
       {pend && (
         <p role="status" data-testid="pending-order-banner" className="mb-4 flex flex-wrap items-center gap-2 rounded-card border border-warning/40 bg-warning-soft p-3 text-sm font-medium text-warning">
           <ClockIcon className="size-5 shrink-0" />
@@ -222,7 +223,7 @@ export function CheckoutPage() {
               <div key={k} className="min-w-0">
                 <Label className="block">
                   {{ name: 'Nome completo', email: 'E-mail', document: 'Documento (11 dígitos)' }[k]}
-                  <Input data-testid={`field-${k}`} value={form[k]} onChange={set(k)} aria-invalid={!!errors[k]} aria-describedby={`err-${k}`} className="mt-2" />
+                  <Input data-testid={`field-${k}`} value={form[k]} onChange={set(k)} aria-invalid={!!errors[k]} aria-describedby={`err-${k}`} className="mt-2 max-md:h-12 max-md:rounded-xl max-md:bg-surface" />
                 </Label>
                 <p id={`err-${k}`} role={errors[k] ? 'alert' : undefined} data-testid={`error-${k}`} className="mt-1 flex items-center gap-1.5 text-sm font-medium text-destructive">{errors[k] && <AlertIcon className="size-4 shrink-0" />}{errors[k]}</p>
               </div>
@@ -261,11 +262,11 @@ export function CheckoutPage() {
               </select>
             </label>
           </div>
-          <div className="min-w-0 space-y-4 lg:sticky lg:top-24">
+          <div className="min-w-0 space-y-4 max-md:-mx-4 max-md:rounded-t-3xl max-md:bg-surface max-md:px-4 max-md:py-5 lg:sticky lg:top-24">
             <h2 className="text-base font-bold">Seus NFTs</h2>
             <ul className="space-y-2">
               {cart.data?.map((i) => (
-                <li key={i.nftId} className="card flex items-center gap-3 p-2">
+                <li key={i.nftId} className="card flex items-center gap-3 p-2 max-md:rounded-2xl max-md:bg-background">
                   <img src={i.image} alt="" width={70} height={70} loading="lazy" decoding="async" className="size-[70px] shrink-0 rounded-lg object-cover" />
                   <span className="min-w-0 flex-1 break-words">
                     <span className="block font-bold">{i.name}</span>
@@ -279,7 +280,7 @@ export function CheckoutPage() {
               ))}
             </ul>
             {quote.data && <QuoteSummary quote={quote.data} />}
-            <Button ref={opener} type="submit" size="lg" className="w-full" data-testid="review-order">Revisar pedido</Button>
+            <Button ref={opener} type="submit" size="lg" className="w-full max-md:h-14 max-md:rounded-2xl max-md:bg-linear-to-r max-md:from-primary max-md:to-primary-2" data-testid="review-order">Revisar pedido</Button>
             <p className="flex items-center gap-2 text-xs text-muted-foreground"><ShieldIcon className="size-4 shrink-0" />Você confirma tudo antes de enviar o pedido.</p>
           </div>
         </form>
@@ -293,9 +294,9 @@ export function CheckoutPage() {
   )
 }
 
-const selectCls = 'mt-2 flex h-10 w-full rounded-control border border-input bg-background px-3 text-sm text-foreground outline-none focus-visible:border-primary focus-visible:ring-[3px] focus-visible:ring-ring/40 aria-invalid:border-destructive'
+const selectCls = 'mt-2 flex h-10 w-full max-md:h-12 max-md:rounded-xl max-md:bg-surface rounded-control border border-input bg-background px-3 text-sm text-foreground outline-none focus-visible:border-primary focus-visible:ring-[3px] focus-visible:ring-ring/40 aria-invalid:border-destructive'
 const layoutCls = 'grid grid-cols-[minmax(0,1fr)] items-start gap-8 lg:grid-cols-[minmax(0,1fr)_405px] lg:gap-12'
-const Breadcrumb = () => <p className="mb-4 text-sm font-bold text-foreground">Início / Mercado / Pagamento</p>
+const Breadcrumb = () => <p className="mb-4 text-sm font-bold text-foreground max-md:hidden">Início / Mercado / Pagamento</p>
 
 function ReviewDialog(p: {
   quote: Quote; form: Form; stale: boolean; error: string | null; submitting: boolean; pendingId?: string

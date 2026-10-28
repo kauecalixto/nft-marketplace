@@ -16,15 +16,18 @@ const SOCIAL_LABEL: Record<SocialProvider, string> = { google: 'Google', faceboo
 
 function GoogleIcon() {
   return (
-    <svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" className="size-5 shrink-0" fill="currentColor">
-      <path d="M21.35 11.1H12v2.98h5.35c-.23 1.4-1.64 4.1-5.35 4.1a5.97 5.97 0 0 1 0-11.94c1.9 0 3.17.81 3.9 1.5l2.66-2.56A9.6 9.6 0 0 0 12 2.4a9.6 9.6 0 1 0 0 19.2c5.54 0 9.2-3.9 9.2-9.38 0-.63-.07-1.1-.15-1.12Z" />
+    <svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" className="size-5 shrink-0">
+      <path fill="#4285F4" d="M21.6 12.23c0-.68-.06-1.33-.17-1.95H12v3.69h5.39a4.6 4.6 0 0 1-2 3.02v2.5h3.23c1.89-1.74 2.98-4.3 2.98-7.26Z" />
+      <path fill="#34A853" d="M12 22c2.7 0 4.96-.9 6.62-2.43l-3.23-2.5c-.9.6-2.04.96-3.39.96-2.6 0-4.81-1.76-5.6-4.12H3.06v2.58A10 10 0 0 0 12 22Z" />
+      <path fill="#FBBC05" d="M6.4 13.9a6 6 0 0 1 0-3.8V7.52H3.06a10 10 0 0 0 0 8.96L6.4 13.9Z" />
+      <path fill="#EA4335" d="M12 5.98c1.47 0 2.79.5 3.83 1.5l2.86-2.86A9.6 9.6 0 0 0 12 2 10 10 0 0 0 3.06 7.52L6.4 10.1C7.19 7.74 9.4 5.98 12 5.98Z" />
     </svg>
   )
 }
 
 function FacebookIcon() {
   return (
-    <svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" className="size-5 shrink-0" fill="currentColor">
+    <svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" className="size-5 shrink-0 text-[#5b8def]" fill="currentColor">
       <path d="M13.5 21.5v-8h2.7l.4-3.2h-3.1V8.3c0-.9.3-1.5 1.6-1.5h1.7V3.9c-.3 0-1.3-.1-2.4-.1-2.4 0-4 1.5-4 4.1v2.4H7.7v3.2h2.7v8h3.1Z" />
     </svg>
   )
@@ -48,7 +51,7 @@ function SocialButtons({ redirect }: { redirect?: unknown }) {
       setPending(null)
     }
   }
-  const social = 'inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-control border border-input px-4 text-sm font-bold text-foreground transition-colors hover:border-primary hover:text-primary focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:cursor-not-allowed disabled:opacity-60'
+  const social = 'inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-control border border-input px-4 max-sm:rounded-lg text-sm font-bold text-foreground transition-colors hover:border-primary hover:text-primary focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:cursor-not-allowed disabled:opacity-60'
   return (
     <>
       <div className="space-y-3">
@@ -69,7 +72,7 @@ function SocialButtons({ redirect }: { redirect?: unknown }) {
 function AuthShell({ tabs, switchLine, redirect, children }: { tabs: ReactNode; switchLine: ReactNode; redirect?: unknown; children: ReactNode }) {
   return (
     <div className="mx-auto w-full max-w-[500px]">
-      <p aria-hidden="true" className="mb-10 mt-6 text-center text-3xl font-bold uppercase tracking-[0.2em] sm:hidden">Kurio</p>
+      <p aria-hidden="true" className="mb-12 mt-12 text-center text-3xl font-bold uppercase tracking-[0.2em] sm:hidden">Kurio</p>
       <div className="rounded-card border-primary sm:border-b-8 sm:bg-surface sm:px-10 sm:py-8">
         <div className="mb-5 flex items-center justify-center gap-4 text-xl font-bold">{tabs}</div>
         {children}
@@ -117,7 +120,7 @@ export function LoginPage() {
   return (
     <AuthShell
       redirect={search.redirect}
-      tabs={<><h1 id="login-title" className="text-primary">Entrar</h1><span aria-hidden="true" className="h-5 w-px bg-primary" /><Link to="/register" className="text-foreground no-underline hover:text-primary">Criar conta</Link></>}
+      tabs={<><h1 id="login-title" className="text-primary max-sm:text-lg max-sm:text-foreground">Entrar</h1><span aria-hidden="true" className="h-5 w-px bg-primary max-sm:hidden" /><Link to="/register" className="text-foreground no-underline hover:text-primary max-sm:hidden">Criar conta</Link></>}
       switchLine={<>Novo na Kurio? <Link to="/register" className="font-bold text-primary">Crie uma conta</Link></>}
     >
     <form onSubmit={submit} noValidate className="space-y-4" aria-labelledby="login-title">
@@ -125,10 +128,10 @@ export function LoginPage() {
       {(search.expired === true || search.expired === 'true') && (
         <p role="status" data-testid="session-expired" className="flex items-start gap-2 rounded-xl border border-warning/40 bg-warning-soft p-3 text-sm font-semibold text-warning"><InfoIcon className="mt-0.5 size-4 shrink-0" />Sua sessão expirou. Entre novamente para continuar.</p>
       )}
-      <Field id="email" label="E-mail" type="email" autoComplete="username" error={errors.email} />
-      <Field id="password" label="Senha" type="password" autoComplete="current-password" error={errors.password} />
+      <Field id="email" label="E-mail" type="email" autoComplete="username" error={errors.email} className="max-sm:h-12 max-sm:rounded-xl" />
+      <Field id="password" label="Senha" type="password" autoComplete="current-password" error={errors.password} className="max-sm:h-12 max-sm:rounded-xl" />
       {general && <p role="alert" data-testid="login-error" className="flex items-start gap-2 rounded-card bg-destructive-soft p-3 text-sm font-semibold text-destructive"><AlertIcon className="mt-0.5 size-4 shrink-0" />{general}</p>}
-      <Button type="submit" size="lg" className="w-full" disabled={login.isPending}>
+      <Button type="submit" size="lg" className="w-full max-sm:rounded-xl" disabled={login.isPending}>
         Entrar
       </Button>
     </form>
@@ -169,16 +172,16 @@ export function RegisterPage() {
   }
   return (
     <AuthShell
-      tabs={<><Link to="/login" search={{}} className="text-foreground no-underline hover:text-primary">Entrar</Link><span aria-hidden="true" className="h-5 w-px bg-primary" /><h1 id="register-title" className="text-primary">Criar conta</h1></>}
+      tabs={<><Link to="/login" search={{}} className="text-foreground no-underline hover:text-primary max-sm:hidden">Entrar</Link><span aria-hidden="true" className="h-5 w-px bg-primary max-sm:hidden" /><h1 id="register-title" className="text-primary max-sm:text-lg max-sm:text-foreground">Criar conta</h1></>}
       switchLine={<>Já tem uma conta? <Link to="/login" search={{}} className="font-bold text-primary">Entre</Link></>}
     >
     <form onSubmit={submit} noValidate className="space-y-4" aria-labelledby="register-title">
       <p className="text-center text-sm text-muted-foreground">Crie seu perfil de colecionador e conecte uma carteira quando quiser.</p>
-      <Field id="name" label="Nome" autoComplete="name" error={errors.name} />
-      <Field id="email" label="E-mail" type="email" autoComplete="username" error={errors.email} />
-      <Field id="password" label="Senha" type="password" autoComplete="new-password" error={errors.password} />
+      <Field id="name" label="Nome" autoComplete="name" error={errors.name} className="max-sm:h-12 max-sm:rounded-xl" />
+      <Field id="email" label="E-mail" type="email" autoComplete="username" error={errors.email} className="max-sm:h-12 max-sm:rounded-xl" />
+      <Field id="password" label="Senha" type="password" autoComplete="new-password" error={errors.password} className="max-sm:h-12 max-sm:rounded-xl" />
       {general && <p role="alert" data-testid="register-error" className="flex items-start gap-2 rounded-xl bg-destructive-soft p-3 text-sm font-semibold text-destructive"><AlertIcon className="mt-0.5 size-4 shrink-0" />{general}</p>}
-      <Button type="submit" size="lg" className="w-full" disabled={register.isPending}>
+      <Button type="submit" size="lg" className="w-full max-sm:rounded-xl" disabled={register.isPending}>
         Cadastrar
       </Button>
     </form>

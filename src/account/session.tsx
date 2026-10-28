@@ -9,8 +9,9 @@ import { buttonVariants } from '../components/ui/button'
 import { LoginIcon, LogoutIcon, UserIcon, WalletIcon } from '../components/icons'
 import { cn } from '../lib/utils'
 
-export const navLink = 'inline-flex h-10 items-center gap-2 rounded-control px-2 text-sm font-medium text-foreground no-underline transition-colors hover:text-primary'
-export const navActive = { className: 'text-primary underline decoration-2 underline-offset-8', 'aria-current': 'page' as const }
+// Abaixo de md a navegação vira a barra de abas inferior do Figma (ícones de 44 px); de md em diante é o menu do cabeçalho.
+export const navLink = 'inline-flex h-10 items-center gap-2 rounded-control px-2 text-sm font-medium text-foreground no-underline transition-colors hover:text-primary max-md:size-11 max-md:min-w-0 max-md:shrink max-md:justify-center max-md:rounded-full max-md:px-0'
+export const navActive = { className: 'text-primary underline decoration-2 underline-offset-8 max-md:bg-accent max-md:no-underline', 'aria-current': 'page' as const }
 
 export interface User { id: string; email: string; name: string; avatar: string }
 export type FieldErrors = Record<string, string>
@@ -85,9 +86,9 @@ export function AccountNav() {
   })
   if (!getToken() || !user)
     return (
-      <Link to="/login" search={{}} className={cn(buttonVariants({ size: 'sm' }), 'ml-1 gap-1.5 no-underline')}>
+      <Link to="/login" search={{}} className={cn(buttonVariants({ size: 'sm' }), 'ml-1 gap-1.5 no-underline max-md:size-11 max-md:min-w-0 max-md:shrink max-md:rounded-full max-md:px-0')}>
         <LoginIcon className="size-5" />
-        <span>Entrar</span>
+        <span className="max-md:sr-only">Entrar</span>
       </Link>
     )
   return (
@@ -96,13 +97,13 @@ export function AccountNav() {
         <UserIcon className="size-5" />
         <span className="sr-only 2xl:not-sr-only">Perfil</span>
       </Link>
-      <Link to="/wallets" className={navLink} activeProps={navActive}>
+      <Link to="/wallets" className={cn(navLink, 'max-md:hidden')} activeProps={navActive}>
         <WalletIcon className="size-5" />
         <span className="sr-only 2xl:not-sr-only">Carteiras</span>
       </Link>
-      <span className="flex items-center gap-2 sm:ml-1 sm:border-l sm:pl-3">
-        <Avatar name={user.name} src={user.avatar} />
-        <span data-testid="nav-user" className="sr-only truncate text-sm font-medium sm:not-sr-only sm:max-w-28">{user.name}</span>
+      <span className="flex items-center gap-2 max-md:contents sm:ml-1 sm:border-l sm:pl-3">
+        <Avatar name={user.name} src={user.avatar} className="max-md:hidden" />
+        <span data-testid="nav-user" className="sr-only truncate text-sm font-medium sm:not-sr-only sm:max-w-28 max-md:sr-only">{user.name}</span>
         <button data-testid="logout" onClick={() => logout.mutate()} className={cn(navLink, 'px-2')}>
           <LogoutIcon className="size-5" />
           <span className="sr-only xl:not-sr-only">Sair</span>

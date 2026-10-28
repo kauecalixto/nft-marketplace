@@ -8,6 +8,7 @@ import { Input } from '../components/ui/input'
 import { formatEth, mulInt, parseEth } from './eth'
 import { Skeleton } from '../components/ui/skeleton'
 import { QuoteSummary } from './QuoteSummary'
+import { BackButton, mobileTitle } from '../components/BackButton'
 
 export function CartPage() {
   const { data: items, isLoading, isError } = useCart()
@@ -52,7 +53,7 @@ export function CartPage() {
         <Breadcrumb />
         <div className={layoutCls}>
           <div>
-            <h1 className="section-title mb-4 text-base">Carrinho</h1>
+            <div className="relative mb-4"><BackButton to="/" /><h1 className={`section-title text-base ${mobileTitle}`}>Carrinho</h1></div>
             <div data-testid="skeleton-cart-summary" role="status" aria-busy="true" aria-label="Carregando carrinho" className="space-y-3">
               <Skeleton className="h-[138px] w-full lg:h-[86px]" />
               <Skeleton className="h-[138px] w-full lg:h-[86px]" />
@@ -80,7 +81,7 @@ export function CartPage() {
       <Breadcrumb />
       {items?.length === 0 && (
         <>
-          <h1 className="section-title mb-6 text-base">Carrinho</h1>
+          <div className="relative mb-6"><BackButton to="/" /><h1 className={`section-title text-base ${mobileTitle}`}>Carrinho</h1></div>
           <div className="card flex flex-col items-center gap-3 p-10 text-center">
             <span className="grid size-14 place-items-center rounded-full bg-secondary text-primary"><CartIcon className="size-7" /></span>
             <p data-testid="cart-empty" className="text-lg font-semibold">Carrinho vazio</p>
@@ -97,7 +98,7 @@ export function CartPage() {
       {!!items?.length && (
         <div className={layoutCls}>
           <div className="min-w-0">
-            <h1 className="section-title mb-4 text-base lg:sr-only">Carrinho</h1>
+            <div className="relative mb-4 lg:sr-only"><BackButton to="/" /><h1 className={`section-title text-base ${mobileTitle}`}>Carrinho</h1></div>
             <div aria-hidden="true" className={`${rowGrid} mb-2 hidden border-b border-primary/45 pb-3 font-bold lg:grid`}>
               <span className="col-span-2">NFTs</span>
               <span>Preço</span>
@@ -107,14 +108,14 @@ export function CartPage() {
             </div>
             <ul className="space-y-3">
               {items.map((i) => (
-                <li key={i.nftId} data-testid={`cart-item-${i.nftId}`} className={`card flex flex-wrap items-center gap-x-4 gap-y-3 p-2 ${rowGrid}`}>
-                  <img src={i.image} alt={i.name} width={70} height={70} loading="lazy" decoding="async" className="size-[70px] shrink-0 rounded-lg object-cover" />
-                  <span className="min-w-0 flex-1 basis-40 break-words lg:basis-auto">
+                <li key={i.nftId} data-testid={`cart-item-${i.nftId}`} className={`card flex flex-wrap items-center gap-x-4 gap-y-3 p-2 max-md:grid max-md:grid-cols-[88px_minmax(0,1fr)_auto] max-md:gap-x-3 max-md:gap-y-1 max-md:overflow-hidden max-md:rounded-2xl max-md:p-0 ${rowGrid}`}>
+                  <img src={i.image} alt={i.name} width={70} height={70} loading="lazy" decoding="async" className="size-[70px] shrink-0 rounded-lg object-cover max-md:row-span-2 max-md:size-full max-md:min-h-[88px] max-md:rounded-none" />
+                  <span className="min-w-0 flex-1 basis-40 break-words max-md:col-start-2 max-md:row-start-1 max-md:self-end max-md:pt-2 lg:basis-auto">
                     <span className="block font-bold">{i.name}</span>
                     <span className="block text-xs text-muted-foreground">ID do token: {i.nftId}</span>
                   </span>
-                  <span className="num font-bold text-primary"><span className="sr-only">Preço: </span>{i.price} ETH</span>
-                  <div className="flex items-center gap-2">
+                  <span className="num font-bold text-primary max-md:sr-only"><span className="sr-only">Preço: </span>{i.price} ETH</span>
+                  <div className="flex items-center gap-2 max-md:col-start-3 max-md:row-start-1 max-md:self-end max-md:pr-3 max-md:pt-2">
                     <Button type="button" size="icon" className="size-8 rounded-full" aria-label={`Diminuir ${i.name}`} data-testid={`qty-dec-${i.nftId}`} disabled={i.quantity <= 1} onClick={() => onChange(i.nftId, i.quantity - 1)}>
                       <MinusIcon className="size-4" />
                     </Button>
@@ -125,20 +126,20 @@ export function CartPage() {
                       <PlusIcon className="size-4" />
                     </Button>
                   </div>
-                  <span className="num font-bold text-primary"><span className="sr-only">Total do item: </span>{formatEth(mulInt(parseEth(i.price), i.quantity))} ETH</span>
-                  <Button type="button" variant="ghost" size="icon" className="text-primary" aria-label={`Remover ${i.name}`} title="Remover" data-testid={`remove-${i.nftId}`} onClick={() => onRemove(i.nftId)}>
+                  <span className="num font-bold text-primary max-md:col-start-2 max-md:row-start-2 max-md:self-start max-md:pb-2"><span className="sr-only">Total do item: </span>{formatEth(mulInt(parseEth(i.price), i.quantity))} ETH</span>
+                  <Button type="button" variant="ghost" size="icon" className="text-primary max-md:col-start-3 max-md:row-start-2 max-md:mr-2 max-md:self-start" aria-label={`Remover ${i.name}`} title="Remover" data-testid={`remove-${i.nftId}`} onClick={() => onRemove(i.nftId)}>
                     <TrashIcon className="size-5" />
                   </Button>
                 </li>
               ))}
             </ul>
           </div>
-          <div className="min-w-0 space-y-5 lg:sticky lg:top-24">
-            <h2 className="section-title text-base text-foreground">Resumo da carteira</h2>
+          <div className="min-w-0 space-y-5 max-md:-mx-4 max-md:rounded-t-3xl max-md:bg-surface max-md:px-4 max-md:py-5 lg:sticky lg:top-24">
+            <h2 className="section-title text-base text-foreground max-md:sr-only">Resumo da carteira</h2>
             <form onSubmit={onApply} className="flex flex-wrap items-end gap-y-2">
               <label className="w-full text-sm font-bold" htmlFor="coupon-input">Código promocional</label>
-              <Input id="coupon-input" data-testid="coupon-input" placeholder="Digite o código promocional..." value={code} onChange={(e) => setCode(e.target.value)} aria-invalid={!!couponError} aria-describedby={couponError ? 'coupon-error' : undefined} className="min-w-0 flex-1 basis-40 rounded-r-none" />
-              <Button type="submit" data-testid="coupon-apply" className="rounded-l-none" disabled={apply.isPending || !code.trim()}>
+              <Input id="coupon-input" data-testid="coupon-input" placeholder="Digite o código promocional..." value={code} onChange={(e) => setCode(e.target.value)} aria-invalid={!!couponError} aria-describedby={couponError ? 'coupon-error' : undefined} className="min-w-0 flex-1 basis-40 rounded-r-none max-md:h-11 max-md:rounded-l-full max-md:bg-background" />
+              <Button type="submit" data-testid="coupon-apply" className="rounded-l-none max-md:h-11 max-md:rounded-r-full" disabled={apply.isPending || !code.trim()}>
                 Aplicar
               </Button>
               {couponError && (
@@ -167,7 +168,7 @@ export function CartPage() {
               </div>
             )}
             {quote.data && <QuoteSummary quote={quote.data} />}
-            <Link to="/checkout" data-testid="go-checkout" className={`${buttonVariants({ size: 'lg' })} w-full text-primary-foreground no-underline`}>
+            <Link to="/checkout" data-testid="go-checkout" className={`${buttonVariants({ size: 'lg' })} w-full text-primary-foreground no-underline max-md:h-14 max-md:rounded-2xl max-md:bg-linear-to-r max-md:from-primary max-md:to-primary-2`}>
               Ir para o pagamento
             </Link>
             <p className="text-center"><Link to="/" className="text-sm text-primary">Continuar explorando</Link></p>
@@ -181,4 +182,4 @@ export function CartPage() {
 const layoutCls = 'grid grid-cols-[minmax(0,1fr)] items-start gap-8 lg:grid-cols-[minmax(0,1fr)_332px] lg:gap-[86px]'
 // Colunas do Figma (NFT, preço, edições, total, remover) a partir de lg; abaixo disso as linhas quebram em flex-wrap.
 const rowGrid = 'lg:grid lg:grid-cols-[70px_minmax(0,1fr)_100px_130px_120px_40px] lg:items-center lg:gap-x-3'
-const Breadcrumb = () => <p className="mb-4 text-sm font-bold text-foreground">Início / Mercado / Carrinho</p>
+const Breadcrumb = () => <p className="mb-4 text-sm font-bold text-foreground max-md:hidden">Início / Mercado / Carrinho</p>

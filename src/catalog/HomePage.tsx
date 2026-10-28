@@ -8,7 +8,8 @@ import { Input } from '../components/ui/input'
 import { Label } from '../components/ui/label'
 import { Badge } from '../components/ui/badge'
 import { Skeleton } from '../components/ui/skeleton'
-import { AlertIcon, SearchIcon } from '../components/icons'
+import { AlertIcon, SearchIcon, SlidersIcon } from '../components/icons'
+import { useIsMobile } from '../lib/useMediaQuery'
 import { Banners, CollectionsPanel, FeaturedOfferCard, Journal, MONKEYS, NetworkPanel } from './StaticSections'
 import { COLLECTIONS, NETWORKS, TABS, applyCatalog, collectionOf, fetchAllNfts, networkOf, type Tab } from './taxonomy'
 import type { Nft, NftPage } from './types'
@@ -142,7 +143,7 @@ function Hero() {
       onMouseLeave={() => setHover(false)}
       onFocus={() => setHover(true)}
       onBlur={() => setHover(false)}
-      className="relative grid grid-cols-[minmax(0,1fr)_9rem] items-center gap-3 rounded-3xl bg-linear-to-br from-[#5b3a22] to-surface p-4 sm:grid-cols-[minmax(0,1fr)_14rem] md:min-h-[450px] md:grid-cols-[minmax(0,1fr)_minmax(0,450px)] md:gap-12 md:rounded-none md:bg-none md:p-0"
+      className="relative grid grid-cols-[minmax(0,1fr)_9rem] items-center max-[380px]:grid-cols-[minmax(0,1fr)] gap-3 rounded-3xl bg-linear-to-br from-[#5b3a22] to-surface p-4 sm:grid-cols-[minmax(0,1fr)_14rem] md:min-h-[450px] md:grid-cols-[minmax(0,1fr)_minmax(0,450px)] md:gap-12 md:rounded-none md:bg-none md:p-0"
     >
       <div className="min-w-0 md:pl-10">
         <p className="text-xs tracking-wider text-foreground md:text-sm">Bem-vindo à Kurio</p>
@@ -150,8 +151,8 @@ function Hero() {
         <p className="mt-3 max-w-[560px] text-xs leading-5 text-muted-foreground md:mt-4 md:text-sm md:leading-6">Descubra NFTs selecionados de criadores emergentes e consagrados. Colecione arte digital rara, apoie artistas e tenha uma parte da cultura da internet.</p>
         <a href="#catalogo" className="mt-4 inline-flex h-9 items-center rounded-control bg-primary px-4 text-sm font-bold uppercase text-primary-foreground no-underline hover:brightness-110 md:mt-6 md:h-10 md:px-5">Explorar</a>
       </div>
-      <img src={SLIDES[slide]} alt="" width={640} height={640} loading="eager" fetchPriority="high" decoding="async" className="aspect-square w-full rounded-2xl object-cover md:rounded-3xl" />
-      <div role="group" aria-label="Imagens em destaque" className="col-span-2 flex items-center justify-center gap-1 md:absolute md:bottom-3 md:left-1/2 md:col-span-1 md:justify-start lg:left-[40%]">
+      <img src={SLIDES[slide]} alt="" width={640} height={640} loading="eager" fetchPriority="high" decoding="async" className="aspect-square w-full rounded-2xl object-cover max-[380px]:mx-auto max-[380px]:w-3/4 md:rounded-3xl" />
+      <div role="group" aria-label="Imagens em destaque" className="col-span-2 flex items-center justify-center gap-1 max-[380px]:col-span-1 md:absolute md:bottom-3 md:left-1/2 md:col-span-1 md:justify-start lg:left-[40%]">
         {SLIDES.map((_, i) => (
           <button key={i} type="button" aria-label={`Mostrar imagem ${i + 1} de ${SLIDES.length}`} aria-current={i === slide ? 'true' : undefined} onClick={() => setSlide(i)} className={dot}>
             <span className={`size-2 rounded-full ${i === slide ? 'bg-primary' : 'bg-primary/40'}`} />
@@ -236,25 +237,42 @@ export function HomePage() {
   const all = useQuery({ queryKey: ['nfts', 'all'], queryFn: ({ signal }) => fetchAllNfts(signal) })
   const countBy = (of: (n: Nft) => string) => all.data?.reduce<Record<string, number>>((acc, n) => ({ ...acc, [of(n)]: (acc[of(n)] ?? 0) + 1 }), {})
   const pages = data ? Math.max(1, Math.ceil(data.total / data.pageSize)) : 1
+  const mobile = useIsMobile()
+  // Mesma caixa de busca nos dois layouts (uma só instância): no mobile fica no topo (Figma 12), no desktop abre o painel de filtros.
+  const searchBox = (
+    <div className="relative min-w-0 flex-1">
+      <SearchIcon className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+      <Input
+        id="busca"
+        aria-label="Buscar NFT"
+        placeholder="Explorar coleções"
+        className="pl-9 max-md:h-12 max-md:rounded-xl max-md:bg-surface"
+        value={q ?? ''}
+        onChange={(e) => setFilters({ q: e.target.value || undefined }, true)}
+      />
+    </div>
+  )
+  const goToFilters = () => {
+    document.getElementById('filtros')?.scrollIntoView({ block: 'start' })
+    document.getElementById('filtros')?.querySelector<HTMLElement>('input, button, select')?.focus({ preventScroll: true })
+  }
 
   return (
     <section>
+      {mobile && (
+        <div className="mb-4 flex items-center gap-3">
+          {searchBox}
+          <Button type="button" size="icon" aria-label="Ir para os filtros" onClick={goToFilters} className="size-12 shrink-0 rounded-xl">
+            <SlidersIcon className="size-6" />
+          </Button>
+        </div>
+      )}
       <Hero />
       <Featured />
       <div id="catalogo" className="mt-14 grid grid-cols-[minmax(0,1fr)] items-start gap-8 lg:grid-cols-[310px_minmax(0,1fr)] lg:gap-12">
-        <aside aria-label="Filtros" className="space-y-6">
+        <aside id="filtros" aria-label="Filtros" className="space-y-6 max-md:order-last">
           <div className="card space-y-6 p-5">
-            <div className="relative">
-              <SearchIcon className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-              <Input
-                id="busca"
-                aria-label="Buscar NFT"
-                placeholder="Explorar coleções"
-                className="pl-9"
-                value={q ?? ''}
-                onChange={(e) => setFilters({ q: e.target.value || undefined }, true)}
-              />
-            </div>
+            {!mobile && <div className="flex">{searchBox}</div>}
             <CollectionsPanel counts={countBy(collectionOf)} selected={collection} onSelect={(v) => setFilters({ collection: v })} />
             <div className="space-y-3">
               <h2 className="text-base font-bold">Faixa de preço</h2>
@@ -326,7 +344,7 @@ export function HomePage() {
           )}
           {data && data.items.length === 0 && <p data-testid="catalog-empty" className="card p-8 text-center text-muted-foreground">Nenhum NFT encontrado</p>}
           {data && (
-            <ul aria-busy={isPlaceholderData} className={`${gridCls} ${isPlaceholderData ? 'opacity-60' : ''}`}>
+            <ul aria-busy={isPlaceholderData} className={`${gridCls} max-md:[&>li:nth-child(even)]:mt-10 ${isPlaceholderData ? 'opacity-60' : ''}`}>
               {data.items.map((n, i) => (
                 <li key={n.id} data-testid="nft-card" className="nft-card relative min-w-0">
                   <Link to="/nfts/$id" params={{ id: n.id }} className="block text-foreground no-underline">

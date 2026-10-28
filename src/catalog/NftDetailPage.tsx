@@ -10,7 +10,7 @@ import { Button } from '../components/ui/button'
 import { Badge } from '../components/ui/badge'
 import { Input } from '../components/ui/input'
 import { Skeleton } from '../components/ui/skeleton'
-import { AlertIcon, CartIcon, CheckCircleIcon, InfoIcon, MinusIcon, PlusIcon } from '../components/icons'
+import { AlertIcon, CartIcon, CheckCircleIcon, ChevronLeftIcon, InfoIcon, MinusIcon, PlusIcon } from '../components/icons'
 import { FavoriteButton } from '../account/FavoriteButton'
 
 export function NftDetailPage() {
@@ -33,7 +33,7 @@ export function NftDetailPage() {
 }
 
 const galleryGrid = 'grid grid-cols-[minmax(0,1fr)] items-start gap-8 lg:grid-cols-[minmax(0,572px)_minmax(0,1fr)] lg:gap-12'
-const Breadcrumb = () => <p className="mb-4 text-sm font-bold text-foreground">Início / Mercado</p>
+const Breadcrumb = () => <p className="mb-4 text-sm font-bold text-foreground max-md:hidden">Início / Mercado</p>
 
 function DetailSkeleton() {
   // espelha Detail: coluna da galeria (painel quadrado + miniaturas) e coluna de informações
@@ -82,8 +82,8 @@ function Gallery({ nft }: { nft: Nft }) {
           </li>
         ))}
       </ul>
-      <div className="card min-w-0 p-3 sm:p-5 lg:flex-1">
-        <img data-testid="gallery-main" src={images[sel]} alt={`${nft.name} - imagem ${sel + 1} de ${images.length}`} width={640} height={640} loading="eager" fetchPriority="high" decoding="async" className="block aspect-square w-full rounded-3xl object-cover" />
+      <div className="card min-w-0 p-3 max-md:bg-transparent max-md:p-0 sm:p-5 lg:flex-1">
+        <img data-testid="gallery-main" src={images[sel]} alt={`${nft.name} - imagem ${sel + 1} de ${images.length}`} width={640} height={640} loading="eager" fetchPriority="high" decoding="async" className="block aspect-square w-full rounded-3xl object-cover max-md:rounded-2xl" />
       </div>
     </div>
   )
@@ -103,11 +103,14 @@ function Detail({ nft }: { nft: Nft }) {
   return (
     <article>
       <Breadcrumb />
-      <div className={galleryGrid}>
+      <div className={`${galleryGrid} relative`}>
         <Gallery nft={nft} />
-        <div className="min-w-0 space-y-4">
-          <div>
-            <Link to="/" className="text-sm text-muted-foreground hover:text-primary">← Voltar ao catálogo</Link>
+        <div className="min-w-0 space-y-4 max-md:-mx-4 max-md:rounded-t-3xl max-md:bg-surface max-md:px-4 max-md:py-5">
+          <div className="max-md:absolute max-md:left-3 max-md:top-3">
+            <Link to="/" className="text-sm text-muted-foreground hover:text-primary max-md:inline-flex max-md:size-10 max-md:items-center max-md:justify-center max-md:rounded-full max-md:bg-background/80 max-md:text-primary max-md:no-underline">
+              <ChevronLeftIcon className="size-5 md:hidden" />
+              <span className="max-md:sr-only">← Voltar ao catálogo</span>
+            </Link>
           </div>
           <h1 className="break-words text-[28px] font-bold leading-9">{nft.name}</h1>
           <div className="border-b border-primary/45 pb-3">
@@ -175,7 +178,7 @@ function Detail({ nft }: { nft: Nft }) {
             <div className="flex flex-wrap items-start gap-3">
               <Button
                 data-testid="add-to-cart"
-                className="h-auto min-h-10 whitespace-normal py-2 text-center"
+                className="h-auto min-h-10 whitespace-normal py-2 text-center max-md:min-h-12 max-md:rounded-2xl max-md:bg-linear-to-r max-md:from-primary max-md:to-primary-2"
                 disabled={unavailable || add.isPending}
                 onClick={() => add.mutate()}
               >

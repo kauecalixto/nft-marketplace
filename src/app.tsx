@@ -12,7 +12,7 @@ import { ArticlePage, LearnPage } from './learn/LearnPages'
 import { postBySlug } from './learn/posts'
 import { AccountNav, navActive, navLink } from './account/session'
 import { buttonVariants } from './components/ui/button'
-import { CartIcon, SearchIcon } from './components/icons'
+import { CartIcon, HomeIcon, SearchIcon, UsersIcon } from './components/icons'
 import { SiteFooter } from './components/SiteFooter'
 import { cn } from './lib/utils'
 import { useCart } from './purchase/queries'
@@ -73,29 +73,32 @@ function CartLink() {
 
 // Itens do menu central do Figma. "Início" e "Mercado" apontam para o catálogo (`/`); "Criadores" (/criadores,
 // derivada de /api/nfts) e "Aprenda" (/aprenda, conteúdo estático) têm rota própria.
-const centerItem = 'inline-flex h-9 items-center border-b-2 border-transparent px-0.5 text-sm font-medium text-foreground no-underline transition-colors hover:text-primary md:h-full'
-const centerActive = 'border-primary text-primary'
+const centerItem = 'inline-flex h-9 items-center border-b-2 border-transparent px-0.5 text-sm font-medium text-foreground no-underline transition-colors hover:text-primary max-md:size-11 max-md:min-w-0 max-md:shrink max-md:justify-center max-md:rounded-full max-md:border-b-0 max-md:px-0 md:h-full'
+const centerActive = 'border-primary text-primary max-md:bg-accent'
 
 function SiteHeader() {
   const path = useRouterState({ select: (s) => s.location.pathname })
   const inMarket = path.startsWith('/nfts/') || path === '/cart' || path === '/checkout' || path.startsWith('/orders/')
   const inOther = path === '/criadores' || path.startsWith('/aprenda')
   const inHome = !inMarket && !inOther
+  // Telas de login e cadastro são de tela cheia no mobile (Figma 09/13): sem barra de abas (continua no DOM, oculta).
+  const auth = path === '/login' || path === '/register'
   return (
-    <header className="sticky top-0 z-40 bg-background/95 backdrop-blur-md">
+    <header className={cn('md:sticky md:top-0 md:z-40 md:bg-background/95 md:backdrop-blur-md', auth && 'max-sm:hidden')}>
       <div className="mx-auto max-w-[1248px] px-4 sm:px-6">
-        <nav aria-label="Principal" className="flex flex-wrap items-center gap-x-3 border-b border-border md:grid md:h-[68px] md:grid-cols-[1fr_auto_1fr] md:items-stretch">
-          <Link to="/" className="order-1 inline-flex h-10 items-center self-center text-sm font-bold uppercase tracking-[0.12em] text-foreground no-underline md:h-auto">
+        {/* Abaixo de md: barra de abas inferior fixa (Figma 12); `contents` promove os itens a filhos diretos do nav. */}
+        <nav aria-label="Principal" className="fixed inset-x-0 bottom-0 z-40 flex items-center justify-around gap-0.5 rounded-t-[28px] border-t border-border bg-surface px-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] pt-2 md:static md:z-auto md:grid md:h-[68px] md:grid-cols-[1fr_auto_1fr] md:items-stretch md:justify-normal md:gap-x-3 md:rounded-none md:border-0 md:border-b md:bg-transparent md:p-0">
+          <Link to="/" className="inline-flex h-10 items-center self-center text-sm font-bold uppercase tracking-[0.12em] text-foreground no-underline max-md:hidden md:h-auto">
             Kurio
           </Link>
-          <ul className="order-3 flex w-full flex-wrap items-stretch justify-between gap-x-3 pb-1 md:order-2 md:w-auto md:justify-center md:gap-10 md:pb-0">
-            <li className="flex"><Link to="/" className={cn(centerItem, inHome && centerActive)} aria-current={path === '/' ? 'page' : undefined}>Início</Link></li>
-            <li className="flex"><Link to="/" hash="catalogo" className={cn(centerItem, inMarket && centerActive)}>Mercado</Link></li>
-            <li className="flex"><Link to="/criadores" className={centerItem} activeProps={{ className: centerActive, 'aria-current': 'page' }}>Criadores</Link></li>
-            <li className="flex"><Link to="/aprenda" className={centerItem} activeProps={{ className: centerActive, 'aria-current': 'page' }}>Aprenda</Link></li>
+          <ul className="contents md:order-2 md:flex md:w-auto md:items-stretch md:justify-center md:gap-10">
+            <li className="flex min-w-0 shrink"><Link to="/" className={cn(centerItem, inHome && centerActive)} aria-current={path === '/' ? 'page' : undefined}><HomeIcon className="size-6 md:hidden" /><span className="max-md:sr-only">Início</span></Link></li>
+            <li className="flex max-md:hidden"><Link to="/" hash="catalogo" className={cn(centerItem, inMarket && centerActive)}>Mercado</Link></li>
+            <li className="flex min-w-0 shrink"><Link to="/criadores" className={centerItem} activeProps={{ className: centerActive, 'aria-current': 'page' }}><UsersIcon className="size-6 md:hidden" /><span className="max-md:sr-only">Criadores</span></Link></li>
+            <li className="flex max-md:hidden"><Link to="/aprenda" className={centerItem} activeProps={{ className: centerActive, 'aria-current': 'page' }}>Aprenda</Link></li>
           </ul>
-          <div className="order-2 ml-auto flex min-w-0 flex-wrap items-center justify-end gap-1 self-center md:order-3 md:justify-self-end">
-            <Link to="/" hash="busca" aria-label="Ir para a busca" onClick={() => window.setTimeout(() => document.getElementById('busca')?.focus(), 200)} className={navLink}>
+          <div className="contents md:order-3 md:ml-auto md:flex md:min-w-0 md:flex-wrap md:items-center md:justify-end md:gap-1 md:self-center md:justify-self-end">
+            <Link to="/" hash="busca" aria-label="Ir para a busca" onClick={() => window.setTimeout(() => document.getElementById('busca')?.focus(), 200)} className={cn(navLink, 'max-md:-mt-9 max-md:size-14 max-md:min-w-0 max-md:shrink max-md:bg-primary max-md:text-primary-foreground max-md:shadow-lift max-md:ring-[6px] max-md:ring-background max-md:hover:text-primary-foreground')}>
               <SearchIcon className="size-6" />
             </Link>
             <CartLink />

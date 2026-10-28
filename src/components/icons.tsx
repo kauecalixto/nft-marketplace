@@ -29,6 +29,9 @@ export const PlusIcon = (p: P) => <Icon {...p}><path d="M12 5v14M5 12h14" /></Ic
 export const MinusIcon = (p: P) => <Icon {...p}><path d="M5 12h14" /></Icon>
 export const ReceiptIcon = (p: P) => <Icon {...p}><path d="M6 3h12v18l-3-2-3 2-3-2-3 2V3Z" /><path d="M9 8h6M9 12h6" /></Icon>
 export const ShieldIcon = (p: P) => <Icon {...p}><path d="M12 3 4 6v6c0 4.5 3.2 7.7 8 9 4.8-1.3 8-4.5 8-9V6l-8-3Z" /><path d="m9 12 2.2 2.2L15.5 10" /></Icon>
+export const UsersIcon = (p: P) => <Icon {...p}><circle cx="9" cy="8" r="3.5" /><path d="M2.5 20a6.5 6.5 0 0 1 13 0" /><path d="M16 4.6a3.5 3.5 0 0 1 0 6.8" /><path d="M18 14.2A6.5 6.5 0 0 1 21.5 20" /></Icon>
+export const ChevronLeftIcon = (p: P) => <Icon {...p}><path d="m15 5-7 7 7 7" /></Icon>
+export const SlidersIcon = (p: P) => <Icon {...p}><path d="M4 7h9M17 7h3M4 17h3M11 17h9" /><circle cx="15" cy="7" r="2" /><circle cx="9" cy="17" r="2" /></Icon>
 export const TrashIcon = (p: P) => <Icon {...p}><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3" /></Icon>
 
 export function LogoMark({ className = 'size-9' }: { className?: string }) {

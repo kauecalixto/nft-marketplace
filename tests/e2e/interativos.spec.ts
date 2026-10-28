@@ -55,7 +55,7 @@ async function prepare(page: Page, ana: boolean, path: string) {
         for (const [k, v] of Object.entries(s)) localStorage.setItem(k, v)
       }, snap)
       await page.goto(path)
-      await page.locator('nav').first().waitFor()
+      await page.locator('#main').waitFor() // login/cadastro mobile são tela cheia: o nav fica oculto
       await page.waitForLoadState('networkidle')
     }
     return load
