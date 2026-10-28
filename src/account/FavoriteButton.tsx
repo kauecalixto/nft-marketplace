@@ -40,7 +40,7 @@ export function FavoriteButton({ nftId }: { nftId: string }) {
           }
           toggle.mutate(!isFav)
         }}
-        className={`inline-flex h-10 items-center gap-2 rounded-control border px-3 text-sm font-semibold transition-colors duration-150 focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-60 ${isFav ? 'border-rose-300 bg-rose-50 text-rose-700' : 'border-input bg-surface text-foreground hover:bg-accent'}`}
+        className={`inline-flex h-10 items-center gap-2 rounded-control border border-primary px-4 text-sm font-bold text-primary transition-colors duration-150 hover:bg-accent focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:opacity-60 ${isFav ? 'bg-accent' : 'bg-transparent'}`}
       >
         <HeartIcon filled={isFav} className="size-5" />
         {isFav ? 'Remover dos favoritos' : 'Favoritar'}

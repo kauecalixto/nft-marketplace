@@ -1,13 +1,17 @@
 import { http, HttpResponse, delay } from 'msw'
 import { accountHandlers, resetAccount } from './account'
-import { currentNft, currentNfts, resetNftOverrides } from './fixtures'
+import { COLLECTIONS, currentNft, currentNfts, nftsFixture, resetNftOverrides } from './fixtures'
 import { parseEth } from '../purchase/eth'
 import { purchaseHandlers, resetPurchase, setPurchaseScenario, isPurchaseScenario } from './purchase'
+import { socialAuthHandlers, resetSocialAuth, setSocialScenario, isSocialScenario } from './social-auth'
 
 export type Scenario =
   | 'default' | 'empty' | 'http-500' | 'slow' | 'variable-latency' | 'network-error'
-  | 'payment-declined' | 'payment-pending' | 'payment-held' | 'payment-timeout' | 'stale-quote' | 'wallet-rejected'
+  | 'social-provider-error' | 'social-cancelled' | 'payment-declined' | 'payment-pending' | 'payment-held' | 'payment-timeout' | 'stale-quote' | 'wallet-rejected'
 const PAGE_SIZE = 6
+// Newsletter simulada: só em memória (limpa no reset), nenhum dado sai do navegador.
+const newsletter = new Set<string>()
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 const HTTP_ERROR_SCENARIOS: Record<number, Record<string, unknown>> = {
   400: { code: 'BAD_REQUEST', message: 'Requisição inválida.' },
   401: { code: 'UNAUTHENTICATED', message: 'Sessão ausente ou expirada.' },
@@ -39,13 +43,16 @@ const state: { scenario: Scenario } = {
 
 export const handlers = [
   ...accountHandlers,
+  ...socialAuthHandlers,
   http.post('/api/__mock/scenario', async ({ request }) => {
     const { scenario } = (await request.json()) as { scenario: Scenario }
-    if (isPurchaseScenario(scenario)) setPurchaseScenario(scenario)
+    if (isSocialScenario(scenario)) setSocialScenario(scenario)
+    else if (isPurchaseScenario(scenario)) setPurchaseScenario(scenario)
     else {
       state.scenario = scenario
       saveScenario(scenario)
       setPurchaseScenario('default')
+      setSocialScenario('default')
     }
     return HttpResponse.json({ scenario })
   }),
@@ -62,6 +69,8 @@ export const handlers = [
     resetNftOverrides()
     resetAccount()
     resetPurchase()
+    resetSocialAuth()
+    newsletter.clear()
     return HttpResponse.json({ ok: true })
   }),
   http.get('/api/nfts', async ({ request }) => {
@@ -88,14 +97,32 @@ export const handlers = [
         (!q || n.name.toLowerCase().includes(q)) &&
         (min === null || parseEth(n.price) >= min) &&
         (max === null || parseEth(n.price) <= max) &&
+        (!sp.get('collection') || n.collection === sp.get('collection')) &&
+        (!sp.get('network') || n.network === sp.get('network')) &&
         (sp.get('available') !== 'true' || n.edition.available > 0),
     )
     const cmpPrice = (a: bigint, b: bigint) => (a < b ? -1 : a > b ? 1 : 0)
     if (sort === 'price-asc') list = [...list].sort((a, b) => cmpPrice(parseEth(a.price), parseEth(b.price)))
     else if (sort === 'price-desc') list = [...list].sort((a, b) => cmpPrice(parseEth(b.price), parseEth(a.price)))
+    else if (sort === 'newest') list = [...list].sort((a, b) => Number(b.id.replace('nft-', '')) - Number(a.id.replace('nft-', '')))
+    else if (sort === 'trending') list = [...list].sort((a, b) => b.edition.total - b.edition.available - (a.edition.total - a.edition.available))
     else if (sort === 'name') list = [...list].sort((a, b) => a.name.localeCompare(b.name))
     const items = list.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
     return HttpResponse.json({ items, total: list.length, page, pageSize: PAGE_SIZE })
+  }),
+  http.get('/api/collections', () =>
+    HttpResponse.json(COLLECTIONS.map((c) => ({ ...c, count: nftsFixture.filter((n) => n.collection === c.slug).length }))),
+  ),
+  http.post('/api/newsletter', async ({ request }) => {
+    if (state.scenario === 'http-500') return HttpResponse.json({ code: 'SERVER_ERROR', message: 'erro' }, { status: 500 })
+    if (state.scenario === 'network-error') return HttpResponse.error()
+    const body = ((await request.json().catch(() => ({}))) ?? {}) as { email?: unknown }
+    const email = typeof body.email === 'string' ? body.email.trim().toLowerCase() : ''
+    if (!EMAIL_RE.test(email) || email.length > 254)
+      return HttpResponse.json({ code: 'VALIDATION_ERROR', message: 'E-mail inválido.', errors: { email: 'Informe um e-mail válido.' } }, { status: 422 })
+    const already = newsletter.has(email)
+    newsletter.add(email)
+    return HttpResponse.json({ status: already ? 'already_subscribed' : 'subscribed' }, { status: already ? 200 : 201 })
   }),
   http.get('/api/nfts/featured', async () => {
     if (state.scenario === 'http-500') return HttpResponse.json({ message: 'erro' }, { status: 500 })

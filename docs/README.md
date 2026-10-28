@@ -6,8 +6,6 @@ Caminhos relativos à raiz do projeto, salvo indicação. Visão geral e comando
 | Documento | Conteúdo |
 | --- | --- |
 | [`ENUNCIADO.md`](ENUNCIADO.md) | Texto do desafio (seções 1 a 12), fonte de todos os requisitos |
-| [`PROJECT-STRUCTURE.md`](PROJECT-STRUCTURE.md) | Estrutura esperada pelo curso. Ressalva: mostra `REVIEW.md` na raiz, onde está o review da semana 6; o da semana 5 está em `semana-5-quantity-limit/` |
-| [`../CLAUDE.md`](../CLAUDE.md) | Regras do agente, entregáveis mínimos e faixa completa |
 | [`../GLOSSARIO.md`](../GLOSSARIO.md) | Dois bounded contexts (Catálogo, Compra), termos e o termo "Edição" com dois sentidos |
 
 ## Arquitetura e contratos
@@ -35,7 +33,6 @@ Caminhos relativos à raiz do projeto, salvo indicação. Visão geral e comando
 | [`../openspec/changes/limite-quantidade-edicao/`](../openspec/changes/limite-quantidade-edicao/) | Change OpenSpec (`openspec validate limite-quantidade-edicao --strict`) |
 | [`../.specs/features/quantity-limit/spec.md`](../.specs/features/quantity-limit/spec.md) | Spec TLC (`validate_spec.py`) |
 | [`../DIFERENCAS.md`](../DIFERENCAS.md) | Diferenças e comparação OpenSpec x TLC |
-| [`comparacao-ferramentas.md`](comparacao-ferramentas.md) | Comparação anterior (speckit x spec manual). Ressalva: o cabeçalho diz que OpenSpec e TLC não foram executados, o que está desatualizado; vale o `DIFERENCAS.md` |
 | [`../specs/001-quantity-limit/`](../specs/001-quantity-limit/) | Artefatos speckit da mesma feature |
 
 ## Semana 6: pedido único sem duplicidade (Compra)
@@ -50,12 +47,10 @@ Caminhos relativos à raiz do projeto, salvo indicação. Visão geral e comando
 ## Specs de trabalho
 | Documento | Conteúdo |
 | --- | --- |
-| [`../specs/002-pending-work/`](../specs/002-pending-work/) | Pendências do projeto e tarefas por agente |
 
 ## Reports
 | Documento | Conteúdo |
 | --- | --- |
-| [`../reports/implementation-status.md`](../reports/implementation-status.md) | Estado: IMPLEMENTADO, TESTADO, VALIDADO, VERIFICADO |
 | [`../reports/qa-report.md`](../reports/qa-report.md) | QA independente (rodada 4, anterior às últimas mudanças de UI) |
 | [`../reports/challenge-validation.md`](../reports/challenge-validation.md) | Validação do desafio |
 | [`../reports/speckit-validation.md`](../reports/speckit-validation.md) | Análise de consistência do speckit |

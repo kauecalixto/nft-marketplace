@@ -1,35 +1,17 @@
 import type { Nft } from '../catalog/types'
 
-// Arte SVG deterministica por NFT (substituivel por assets reais: ver ARCHITECTURE.md > Design).
-// n define a paleta e a composicao (4 estilos); `v` (0..2) varia a mesma obra para a galeria.
-const PALETTES: [number, number][] = [
-  [262, 320], [205, 258], [168, 214], [24, 340], [350, 28], [190, 140],
-  [280, 210], [45, 350], [150, 200], [310, 245], [12, 300], [230, 175],
+// Imagens originais do Figma (4 macacos, 640x640 JPEG em public/nfts/). No Figma elas se repetem em todos
+// os cards; aqui sao distribuidas de forma deterministica pelo numero do NFT (ver ARCHITECTURE.md > Design).
+const ARTS = ['/nfts/macaco-jaqueta.jpg', '/nfts/gorila-chapeu.jpg', '/nfts/chimpanze-blazer.jpg', '/nfts/orangotango-fone.jpg']
+const art = (n: number, v: number) => ARTS[(n - 1 + v) % ARTS.length]
+
+// Coleções e redes (campos aditivos): 4 NFTs por coleção; rede alterna por número do NFT.
+export const COLLECTIONS = [
+  { slug: 'genesis', name: 'Genesis' },
+  { slug: 'orbit', name: 'Orbit' },
+  { slug: 'pixel', name: 'Pixel' },
 ]
-const art = (n: number, v: number) => {
-  const [h1, h2] = PALETTES[(n - 1) % PALETTES.length]
-  const a = (h1 + v * 22) % 360
-  const b = (h2 - v * 18 + 360) % 360
-  const r = (k: number) => ((n * 37 + v * 53 + k * 91) % 100) / 100 // pseudo-aleatorio estavel em [0,1)
-  const c1 = `hsl(${a} 85% 62%)`
-  const c2 = `hsl(${b} 80% 48%)`
-  const c3 = `hsl(${(a + b) / 2 + 20} 90% 78%)`
-  let shapes = ''
-  const style = (n + v) % 4
-  if (style === 0) {
-    for (let i = 0; i < 5; i++) shapes += `<circle cx="${60 + r(i) * 280}" cy="${60 + r(i + 7) * 280}" r="${30 + r(i + 3) * 70}" fill="${i % 2 ? c3 : '#fff'}" fill-opacity="${0.18 + (i % 3) * 0.1}"/>`
-  } else if (style === 1) {
-    for (let i = 0; i < 5; i++) shapes += `<path d="M-20 ${210 + i * 36} C 80 ${150 + i * 30 + r(i) * 60} 200 ${290 + i * 24 - r(i + 2) * 60} 420 ${190 + i * 34}" stroke="${i % 2 ? c3 : '#fff'}" stroke-opacity="${0.55 - i * 0.07}" stroke-width="${10 + i * 3}" fill="none" stroke-linecap="round"/>`
-  } else if (style === 2) {
-    for (let i = 0; i < 6; i++) shapes += `<circle cx="200" cy="200" r="${28 + i * 30}" fill="none" stroke="${i % 2 ? c3 : '#fff'}" stroke-opacity="${0.7 - i * 0.09}" stroke-width="${6 + (i % 3) * 3}"/>`
-    shapes += `<circle cx="200" cy="200" r="22" fill="#fff" fill-opacity=".9"/>`
-  } else {
-    for (let i = 0; i < 5; i++) shapes += `<rect x="${110 - i * 14}" y="${110 - i * 14}" width="${180 + i * 28}" height="${180 + i * 28}" rx="${10 + i * 6}" transform="rotate(${45 + i * 9} 200 200)" fill="none" stroke="${i % 2 ? c3 : '#fff'}" stroke-opacity="${0.75 - i * 0.12}" stroke-width="${5 + i}"/>`
-  }
-  return `data:image/svg+xml;utf8,${encodeURIComponent(
-    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" width="400" height="400"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${c1}"/><stop offset="1" stop-color="${c2}"/></linearGradient><radialGradient id="s" cx=".3" cy=".25" r=".8"><stop offset="0" stop-color="#fff" stop-opacity=".35"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient></defs><rect width="400" height="400" fill="url(#g)"/>${shapes}<rect width="400" height="400" fill="url(#s)"/></svg>`,
-  )}`
-}
+const NETWORKS: NonNullable<Nft['network']>[] = ['ethereum', 'polygon', 'base']
 
 const mk = (n: number, name: string, total: number, available: number, walletLimit: number, price: string): Nft => ({
   id: `nft-${n}`,
@@ -41,6 +23,8 @@ const mk = (n: number, name: string, total: number, available: number, walletLim
   featured: n >= 7 && n <= 9,
   edition: { total, available },
   walletLimit,
+  collection: COLLECTIONS[Math.floor((n - 1) / 4) % COLLECTIONS.length].slug,
+  network: NETWORKS[n % NETWORKS.length],
 })
 
 // max = min(available, walletLimit)

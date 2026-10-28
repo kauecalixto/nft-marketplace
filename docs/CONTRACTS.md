@@ -9,11 +9,15 @@ Base: `/api` (Axios `baseURL`, `VITE_API_URL`). Auth: `Authorization: Bearer <to
 | POST /auth/login | `{email,password}` | 200 `{token,user}`; 401 `INVALID_CREDENTIALS` |
 | GET /session | - | 200 `User{id,email,name,avatar}`; 401 `SESSION_EXPIRED` |
 | POST /auth/logout | - | 204 (sempre) |
+| POST /auth/social | `{provider:'google'\|'facebook', credential?:string}` | 200 `{token,user}` (mesma forma do login); 400 `INVALID_PROVIDER`; 401 `PROVIDER_FAILURE` ou `PROVIDER_CANCELLED` (mensagens em PT) |
+
+`POST /auth/social` é SIMULADO (MSW, `src/mocks/social-auth.ts`; sem OAuth real, client ID ou verificação de token). `google` entra como `ana@example.test` (`u-ana`, o demo existente); `facebook` entra como `carla@example.test` (`u-carla`, criada na 1a vez, sem senha utilizável). Token = id do usuário e isolamento por usuário iguais ao login; só campos públicos `{id,email,name,avatar}` são devolvidos. `credential` é opaca e ignorada, exceto os gatilhos determinísticos `mock:error` (401 `PROVIDER_FAILURE`) e `mock:cancel` (401 `PROVIDER_CANCELLED`). Cenários via `POST /__mock/scenario {scenario}`: `social-provider-error` e `social-cancelled` (valem até outro cenário ou `/__mock/reset`). O interceptor trata `/auth/social` como rota de auth: 401 não redireciona nem expira sessão. Cliente: `loginSocial(provider, credential?)` (`src/api.ts`) e `signInWithProvider(provider, credential?)` (`src/account/session.tsx`).
 
 ## NFTs (públicos)
 | Método e caminho | Request | Resposta / erros |
 |---|---|---|
 | GET /nfts | query: `q` (substring do nome), `min`/`max` (ETH decimal; comparados em BigInt wei), `available=true`, `sort` (`price-asc`,`price-desc`,`name`), `page` (>=1; tamanho fixo 6) | 200 `{items: Nft[], total, page, pageSize}`; cenários: `http-500` -> 500 `{message}`, `network-error` -> falha de rede, `slow` -> +3 s, `variable-latency` -> 900 ms em página ímpar e 100 ms em par, `empty` -> `{items:[],total:0,page:1,pageSize:6}` |
+| GET /collections | - | 200 `[{slug,name,count}]` (aditivo; painel Coleções) |
 | GET /nfts/:id | - | 200 `Nft{id,name,creator,price,image,edition{total,available},walletLimit}`; 404 `{message:'not found'}`; 500/network-error/slow idem |
 
 ## Favoritos (auth)
@@ -59,6 +63,11 @@ Reemite `order.updated` do pedido pelo servidor Socket.IO simulado, sem alterar 
 | Entrega | `order.updated` só às subscriptions do dono (`userId` do pedido); o cliente descarta `eventId` repetido e `version` menor ou igual à já aplicada |
 
 Observações: o evento é fabricado com os valores do body, então um `status` diferente do real é emitido assim mesmo (o app só invalida queries e relê o pedido por REST, que continua a fonte da verdade). `/confirm` e `/decline` só têm efeito em pedido `pending` (`settle` ignora pedidos terminais) e devolvem o pedido atual.
+
+**Aditivos de catálogo (retrocompatíveis).** `Nft` ganha `collection?` (slug) e `network?` (`ethereum`|`polygon`|`base`). `GET /nfts` aceita `collection=<slug>` e `network=<id>` (filtro exato; ausente = sem filtro) e `sort=newest` (maior número de NFT primeiro) e `sort=trending` (mais vendidos: `total - available` decrescente), além dos já existentes.
+
+## Newsletter (simulada)
+`POST /newsletter {email}` -> 201 `{status:'subscribed'}` (novo), 200 `{status:'already_subscribed'}` (repetido), 422 `{code:'VALIDATION_ERROR',message,errors:{email}}` (e-mail inválido ou > 254). Cenários `http-500`/`network-error` valem. Só em memória no MSW (limpa por `/__mock/reset`); nenhum dado é coletado ou enviado.
 
 ### Cenários de erro HTTP genéricos (mock)
 `GET|POST|PUT|PATCH|DELETE /api/__mock/status/:code` responde sempre com o status pedido e corpo fixo (determinístico, sem estado):

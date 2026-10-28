@@ -5,7 +5,7 @@ import { AlertIcon } from '../components/icons'
 
 export function Field({ id, label, error, ...rest }: { id: string; label: string; error?: string } & InputHTMLAttributes<HTMLInputElement>) {
   return (
-    <div className="space-y-1.5">
+    <div className="space-y-2">
       <Label htmlFor={id} className="block">{label}</Label>
       <Input
         id={id}

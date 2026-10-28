@@ -11,6 +11,7 @@ import { Skeleton } from '../components/ui/skeleton'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogTitle } from '../components/ui/dialog'
 import { QuoteSummary } from './QuoteSummary'
 import { AlertIcon, CheckIcon, ClockIcon, InfoIcon, ShieldIcon } from '../components/icons'
+import { formatEth, mulInt, parseEth } from './eth'
 import type { Order, Quote } from './types'
 
 interface Form { name: string; email: string; document: string; walletId: string; network: string }
@@ -177,28 +178,22 @@ export function CheckoutPage() {
   if (cart.isLoading || wallets.isLoading)
     return (
       <section>
-        <h1 className="mb-6 text-3xl font-extrabold">Pagamento</h1>
-        <div data-testid="skeleton-checkout" role="status" aria-busy="true" aria-label="Carregando pagamento" className="grid grid-cols-[minmax(0,1fr)] items-start gap-6 lg:grid-cols-[minmax(0,1fr)_22rem]">
-          <div className="space-y-6">
-            <div className="card space-y-4 p-5 sm:p-6">
-              <Skeleton className="h-7 w-44" />
-              {Array.from({ length: 3 }, (_, i) => (
-                <div key={i}>
-                  <Skeleton className="h-4 w-32" />
-                  <Skeleton className="mt-2 h-10 w-full" />
-                </div>
-              ))}
-            </div>
-            <div className="card space-y-4 p-5 sm:p-6">
-              <Skeleton className="h-7 w-36" />
-              <Skeleton className="h-10 w-full" />
-              <Skeleton className="h-10 w-full" />
-            </div>
+        <Breadcrumb />
+        <h1 className="section-title mb-6 text-base">Pagamento</h1>
+        <div data-testid="skeleton-checkout" role="status" aria-busy="true" aria-label="Carregando pagamento" className={layoutCls}>
+          <div className="grid content-start gap-x-6 gap-y-5 md:grid-cols-2">
+            <Skeleton className="h-6 w-48 md:col-span-2" />
+            {Array.from({ length: 3 }, (_, i) => <Skeleton key={i} className="h-[66px] w-full" />)}
+            <Skeleton className="mt-2 h-6 w-40 md:col-span-2" />
+            <Skeleton className="h-[72px] w-full" />
+            <Skeleton className="h-[72px] w-full" />
           </div>
-          <div className="card space-y-4 p-5 sm:p-6">
-            <Skeleton className="h-7 w-24" />
-            <Skeleton className="h-[105px] w-full" />
-            <Skeleton className="h-11 w-full" />
+          <div className="space-y-4">
+            <Skeleton className="h-6 w-24" />
+            <Skeleton className="h-[180px] w-full" />
+            <Skeleton className="h-[121px] w-full" />
+            <Skeleton className="h-12 w-full" />
+            <Skeleton className="h-4 w-full" />
           </div>
         </div>
       </section>
@@ -208,69 +203,81 @@ export function CheckoutPage() {
 
   return (
     <section>
-      <h1 className="mb-6 text-3xl font-extrabold">Pagamento</h1>
+      <Breadcrumb />
+      <h1 className="section-title mb-6 text-base">Pagamento</h1>
       {pend && (
-        <p role="status" data-testid="pending-order-banner" className="mb-4 flex flex-wrap items-center gap-2 rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm font-medium text-warning">
+        <p role="status" data-testid="pending-order-banner" className="mb-4 flex flex-wrap items-center gap-2 rounded-card border border-warning/40 bg-warning-soft p-3 text-sm font-medium text-warning">
           <ClockIcon className="size-5 shrink-0" />
           <span>Você tem um pedido pendente: <Link to="/orders/$id" params={{ id: pend.id }} className="break-all font-semibold underline">{pend.id}</Link></span>
         </p>
       )}
-      {restoredNotice && <p role="status" data-testid="draft-restored" className="mb-4 flex items-center gap-2 rounded-xl border border-indigo-200 bg-indigo-50 p-3 text-sm font-medium text-secondary-foreground"><InfoIcon className="size-5 shrink-0" />Recuperamos os dados do seu checkout.</p>}
+      {restoredNotice && <p role="status" data-testid="draft-restored" className="mb-4 flex items-center gap-2 rounded-card border border-border bg-secondary p-3 text-sm font-medium text-secondary-foreground"><InfoIcon className="size-5 shrink-0" />Recuperamos os dados do seu checkout.</p>}
       {empty ? (
         <p data-testid="checkout-empty" className="card p-8 text-center text-muted-foreground">Carrinho vazio. <Link to="/" className="font-semibold text-primary underline">Ver catálogo</Link></p>
       ) : (
-        <form onSubmit={openReview} noValidate className="grid grid-cols-[minmax(0,1fr)] items-start gap-6 lg:grid-cols-[minmax(0,1fr)_22rem]">
-          <div className="space-y-6">
-            <div className="card space-y-4 p-5 sm:p-6">
-              <h2 className="text-lg font-bold">Dados do comprador</h2>
-              {(['name', 'email', 'document'] as const).map((k) => (
-                <div key={k}>
-                  <Label className="block">
-                    {{ name: 'Nome completo', email: 'E-mail', document: 'Documento (11 dígitos)' }[k]}
-                    <Input data-testid={`field-${k}`} value={form[k]} onChange={set(k)} aria-invalid={!!errors[k]} aria-describedby={`err-${k}`} className="mt-1.5" />
-                  </Label>
-                  <p id={`err-${k}`} role={errors[k] ? 'alert' : undefined} data-testid={`error-${k}`} className="mt-1 flex items-center gap-1.5 text-sm font-medium text-destructive">{errors[k] && <AlertIcon className="size-4 shrink-0" />}{errors[k]}</p>
-                </div>
-              ))}
-            </div>
-            <div className="card space-y-4 p-5 sm:p-6">
-              <h2 className="text-lg font-bold">Carteira e rede</h2>
-              <div>
-                <label className="block text-sm font-medium">
-                  Carteira
-                  <select data-testid="field-wallet" value={form.walletId} onChange={set('walletId')} aria-invalid={!!errors.walletId} aria-describedby="err-walletId" className={selectCls}>
-                    <option value="">Selecione</option>
-                    {wallets.data?.map((w) => (
-                      <option key={w.id} value={w.id}>{w.label ?? w.name ?? w.address} ({w.address.slice(0, 8)}...)</option>
-                    ))}
-                  </select>
-                </label>
-                <p id="err-walletId" role={errors.walletId ? 'alert' : undefined} data-testid="error-walletId" className="mt-1 flex items-center gap-1.5 text-sm font-medium text-destructive">{errors.walletId && <AlertIcon className="size-4 shrink-0" />}{errors.walletId}</p>
-                {selectedWallet && (
-                  <div className="mt-2 flex flex-wrap items-center gap-2">
-                    <span data-testid="wallet-status" role="status" className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-xs font-semibold ${connection.isPending ? 'border-border bg-secondary text-secondary-foreground' : selectedWallet.connected === false ? 'border-amber-200 bg-amber-50 text-warning' : 'border-green-200 bg-green-50 text-success'}`}>
-                      {connection.isPending ? <ClockIcon className="size-3.5" /> : selectedWallet.connected === false ? <AlertIcon className="size-3.5" /> : <CheckIcon className="size-3.5" />}
-                      {connection.isPending ? 'Processando...' : selectedWallet.connected === false ? 'Desconectada' : 'Conectada'}
-                    </span>
-                    <Button type="button" size="sm" data-testid="connect-wallet" disabled={connection.isPending || selectedWallet.connected !== false} onClick={() => connection.mutate({ id: selectedWallet.id, action: 'connect' })}>Conectar</Button>
-                    <Button type="button" size="sm" variant="outline" data-testid="disconnect-wallet" disabled={connection.isPending || selectedWallet.connected === false} onClick={() => connection.mutate({ id: selectedWallet.id, action: 'disconnect' })}>Desconectar</Button>
-                  </div>
-                )}
-                {walletError && <p role="alert" data-testid="wallet-error" className="mt-1 flex items-center gap-1.5 text-sm font-medium text-destructive"><AlertIcon className="size-4 shrink-0" />{walletError}</p>}
-                {!wallets.data?.length && <p className="mt-2 text-sm text-muted-foreground">Nenhuma carteira cadastrada. <Link to="/wallets" className="font-semibold text-primary underline">Cadastrar carteira</Link></p>}
+        <form onSubmit={openReview} noValidate className={layoutCls}>
+          <div className="grid min-w-0 content-start gap-x-6 gap-y-5 md:grid-cols-2">
+            <h2 className="text-base font-bold md:col-span-2">Perfil do colecionador</h2>
+            {(['name', 'email', 'document'] as const).map((k) => (
+              <div key={k} className="min-w-0">
+                <Label className="block">
+                  {{ name: 'Nome completo', email: 'E-mail', document: 'Documento (11 dígitos)' }[k]}
+                  <Input data-testid={`field-${k}`} value={form[k]} onChange={set(k)} aria-invalid={!!errors[k]} aria-describedby={`err-${k}`} className="mt-2" />
+                </Label>
+                <p id={`err-${k}`} role={errors[k] ? 'alert' : undefined} data-testid={`error-${k}`} className="mt-1 flex items-center gap-1.5 text-sm font-medium text-destructive">{errors[k] && <AlertIcon className="size-4 shrink-0" />}{errors[k]}</p>
               </div>
-              <label className="block text-sm font-medium">
-                Rede
-                <select data-testid="field-network" value={form.network} onChange={set('network')} className={selectCls}>
-                  {NETWORKS.map((n) => (
-                    <option key={n.id} value={n.id}>{n.label}</option>
+            ))}
+            <h2 className="mt-2 text-base font-bold md:col-span-2">Carteira e rede</h2>
+            <div className="min-w-0">
+              <label className="block text-sm">
+                Carteira
+                <select data-testid="field-wallet" value={form.walletId} onChange={set('walletId')} aria-invalid={!!errors.walletId} aria-describedby="err-walletId" className={selectCls}>
+                  <option value="">Selecione</option>
+                  {wallets.data?.map((w) => (
+                    <option key={w.id} value={w.id}>{w.label ?? w.name ?? w.address} ({w.address.slice(0, 8)}...)</option>
                   ))}
                 </select>
               </label>
+              <p id="err-walletId" role={errors.walletId ? 'alert' : undefined} data-testid="error-walletId" className="mt-1 flex items-center gap-1.5 text-sm font-medium text-destructive">{errors.walletId && <AlertIcon className="size-4 shrink-0" />}{errors.walletId}</p>
+              {selectedWallet && (
+                <div className="mt-2 flex flex-wrap items-center gap-2">
+                  <span data-testid="wallet-status" role="status" className={`inline-flex items-center gap-1.5 rounded-control border px-2.5 py-0.5 text-xs font-bold ${connection.isPending ? 'border-border bg-secondary text-secondary-foreground' : selectedWallet.connected === false ? 'border-warning/40 bg-warning-soft text-warning' : 'border-success/40 bg-success-soft text-success'}`}>
+                    {connection.isPending ? <ClockIcon className="size-3.5" /> : selectedWallet.connected === false ? <AlertIcon className="size-3.5" /> : <CheckIcon className="size-3.5" />}
+                    {connection.isPending ? 'Processando...' : selectedWallet.connected === false ? 'Desconectada' : 'Conectada'}
+                  </span>
+                  <Button type="button" size="sm" data-testid="connect-wallet" disabled={connection.isPending || selectedWallet.connected !== false} onClick={() => connection.mutate({ id: selectedWallet.id, action: 'connect' })}>Conectar</Button>
+                  <Button type="button" size="sm" variant="outline" data-testid="disconnect-wallet" disabled={connection.isPending || selectedWallet.connected === false} onClick={() => connection.mutate({ id: selectedWallet.id, action: 'disconnect' })}>Desconectar</Button>
+                </div>
+              )}
+              {walletError && <p role="alert" data-testid="wallet-error" className="mt-1 flex items-center gap-1.5 text-sm font-medium text-destructive"><AlertIcon className="size-4 shrink-0" />{walletError}</p>}
+              {!wallets.data?.length && <p className="mt-2 text-sm text-muted-foreground">Nenhuma carteira cadastrada. <Link to="/wallets" className="font-bold text-primary underline">Cadastrar carteira</Link></p>}
             </div>
+            <label className="block min-w-0 text-sm">
+              Rede
+              <select data-testid="field-network" value={form.network} onChange={set('network')} className={selectCls}>
+                {NETWORKS.map((n) => (
+                  <option key={n.id} value={n.id}>{n.label}</option>
+                ))}
+              </select>
+            </label>
           </div>
-          <div className="card space-y-4 p-5 sm:p-6 lg:sticky lg:top-24">
-            <h2 className="text-lg font-bold">Resumo</h2>
+          <div className="min-w-0 space-y-4 lg:sticky lg:top-24">
+            <h2 className="text-base font-bold">Seus NFTs</h2>
+            <ul className="space-y-2">
+              {cart.data?.map((i) => (
+                <li key={i.nftId} className="card flex items-center gap-3 p-2">
+                  <img src={i.image} alt="" width={70} height={70} loading="lazy" decoding="async" className="size-[70px] shrink-0 rounded-lg object-cover" />
+                  <span className="min-w-0 flex-1 break-words">
+                    <span className="block font-bold">{i.name}</span>
+                    <span className="block text-xs text-muted-foreground">ID do token: {i.nftId}</span>
+                  </span>
+                  <span className="num shrink-0 text-right text-sm">
+                    <span className="block text-muted-foreground">x {i.quantity}</span>
+                    <span className="block font-bold text-primary">{formatEth(mulInt(parseEth(i.price), i.quantity))} ETH</span>
+                  </span>
+                </li>
+              ))}
+            </ul>
             {quote.data && <QuoteSummary quote={quote.data} />}
             <Button ref={opener} type="submit" size="lg" className="w-full" data-testid="review-order">Revisar pedido</Button>
             <p className="flex items-center gap-2 text-xs text-muted-foreground"><ShieldIcon className="size-4 shrink-0" />Você confirma tudo antes de enviar o pedido.</p>
@@ -286,7 +293,9 @@ export function CheckoutPage() {
   )
 }
 
-const selectCls = 'mt-1.5 flex h-10 w-full rounded-control border border-input bg-surface px-3 text-sm shadow-sm outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/30 aria-invalid:border-destructive'
+const selectCls = 'mt-2 flex h-10 w-full rounded-control border border-input bg-background px-3 text-sm text-foreground outline-none focus-visible:border-primary focus-visible:ring-[3px] focus-visible:ring-ring/40 aria-invalid:border-destructive'
+const layoutCls = 'grid grid-cols-[minmax(0,1fr)] items-start gap-8 lg:grid-cols-[minmax(0,1fr)_405px] lg:gap-12'
+const Breadcrumb = () => <p className="mb-4 text-sm font-bold text-foreground">Início / Mercado / Pagamento</p>
 
 function ReviewDialog(p: {
   quote: Quote; form: Form; stale: boolean; error: string | null; submitting: boolean; pendingId?: string
@@ -296,16 +305,16 @@ function ReviewDialog(p: {
     <DialogContent data-testid="review-dialog" aria-describedby="review-desc" onCloseAutoFocus={p.onCloseAutoFocus}>
       <DialogTitle>Revisar pedido</DialogTitle>
       <DialogDescription id="review-desc" className="sr-only">Confira os dados e itens antes de confirmar o pedido.</DialogDescription>
-      <p className="break-words rounded-xl bg-secondary p-3 text-sm font-medium">{p.form.name} - {p.form.email}</p>
-      <ul className="divide-y rounded-xl border text-sm">
+      <p className="break-words rounded-card bg-secondary p-3 text-sm font-medium">{p.form.name} - {p.form.email}</p>
+      <ul className="divide-y rounded-card border text-sm">
         {p.quote.items.map((i) => (
           <li key={i.nftId} className="num break-words px-3 py-2">{i.name} x {i.quantity} = {i.lineTotal} ETH</li>
         ))}
       </ul>
       <QuoteSummary quote={p.quote} />
-      {p.stale && <p role="alert" data-testid="quote-changed" className="flex items-start gap-2 rounded-xl bg-amber-50 p-3 text-sm font-semibold text-warning"><AlertIcon className="mt-0.5 size-4 shrink-0" />A cotação mudou. Confira os novos valores e confirme novamente.</p>}
+      {p.stale && <p role="alert" data-testid="quote-changed" className="flex items-start gap-2 rounded-card bg-warning-soft p-3 text-sm font-semibold text-warning"><AlertIcon className="mt-0.5 size-4 shrink-0" />A cotação mudou. Confira os novos valores e confirme novamente.</p>}
       {p.error && (
-        <p role="alert" data-testid="order-error" className="flex items-start gap-2 rounded-xl bg-red-50 p-3 text-sm font-semibold text-destructive">
+        <p role="alert" data-testid="order-error" className="flex items-start gap-2 rounded-card bg-destructive-soft p-3 text-sm font-semibold text-destructive">
           <AlertIcon className="mt-0.5 size-4 shrink-0" />
           <span>
             {p.error}

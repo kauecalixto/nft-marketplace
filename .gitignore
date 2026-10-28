@@ -4,3 +4,21 @@ test-results
 playwright-report
 *.tsbuildinfo
 .agents/
+
+# Orquestração/uso pessoal: não faz parte da entrega
+CLAUDE.md
+PROMPT-INICIAL.md
+/skills/
+/templates/
+.claude/agents/
+.claude/commands/
+.claude/settings*.json
+__pycache__/
+.env
+.env.local
+specs/002-pending-work/
+reports/implementation-status.md
+docs/design/
+.playwright-mcp/
+docs/PROJECT-STRUCTURE.md
+docs/comparacao-ferramentas.md

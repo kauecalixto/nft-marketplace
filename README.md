@@ -68,7 +68,7 @@ Divergência a conhecer antes de avaliar a semana 6: o app monta o pedido a part
 - Última execução completa conhecida: `npx playwright test` com 169 passed e 0 failed (inclui `@visual`, com baselines regenerados após o redesign).
 - A regressão visual é só local: os baselines versionados são `*-win32.png` e não valem em Linux.
 - O workflow `.github/workflows/ci.yml` (typecheck, lint, unit, build:demo e `playwright test --grep-invert @visual`) existe, mas **ainda NÃO rodou no GitHub**: não houve push.
-- Relatórios: `reports/qa-report.md`, `reports/implementation-status.md`, `reports/lighthouse/`.
+- Relatórios: `reports/qa-report.md`, `reports/lighthouse/`.
 
 ## Estrutura de pastas
 ```text
@@ -84,7 +84,7 @@ tests/e2e/    specs Playwright (+ baselines visuais); tests/unit/ teste de ETH
 docs/         enunciado, contratos, arquitetura, QA, specs, ADR (índice em docs/README.md)
 openspec/     change OpenSpec da semana 5
 .specs/       spec TLC da semana 5
-specs/        speckit (001-quantity-limit) e pendências (002-pending-work)
+specs/        speckit (001-quantity-limit)
 reports/      QA, status, validação, Lighthouse
 .github/      workflow de CI
 ```
@@ -106,4 +106,4 @@ reports/      QA, status, validação, Lighthouse
 - Baselines `@visual` só valem em Windows; CI ainda não executado no GitHub; Lighthouse anterior ao redesign.
 - shadcn/ui usado nas telas de autenticação, perfil/carteiras, catálogo, detalhe, carrinho, checkout e pedido; cobertura total não auditada.
 - Mocks: Socket.IO só websocket, namespace `/`; estado em memória/navegador.
-Veja `docs/qa/known-gaps.md` e `reports/implementation-status.md`.
+Veja `docs/qa/known-gaps.md`.

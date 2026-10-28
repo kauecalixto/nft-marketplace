@@ -87,6 +87,23 @@ const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 const ADDRESS = /^0x[0-9a-fA-F]{40}$/
 const transient = () => HttpResponse.json({ code: 'TRANSIENT', message: 'Falha transitória' }, { status: 503 })
 
+/**
+ * Login social SIMULADO (usado por social-auth.ts): reutiliza o usuário de e-mail igual ou cria um sem senha utilizável
+ * (hash aleatório; só entra pelo provedor). Reabre sessão expirada/encerrada e devolve apenas os campos públicos.
+ */
+export async function signInSocialUser(profile: { id: string; email: string; name: string }) {
+  const db = await getDb()
+  let u = db.users.find((x) => x.email === profile.email)
+  if (!u) {
+    u = await makeUser(profile.id, profile.email, profile.name, crypto.randomUUID())
+    db.users.push(u)
+  }
+  db.expired = db.expired.filter((x) => x !== u.id)
+  db.loggedOut = db.loggedOut.filter((x) => x !== u.id)
+  write(db)
+  return { token: u.id, user: pub(u) }
+}
+
 export function resetAccount() {
   cache = null
   favoritesError = false

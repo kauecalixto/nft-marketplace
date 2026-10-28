@@ -1,37 +1,47 @@
 @import "tailwindcss";
 
 /* ---------------------------------------------------------------------------
-   Design tokens (ver ARCHITECTURE.md > Design). Base clara, um acento indigo/violeta.
-   Contrastes calculados (WCAG 2.x): texto >= 4,5:1; bordas de controles >= 3:1.
+   Design tokens (ver ARCHITECTURE.md > Design). Baseados nos frames reais do Figma
+   (docs/design/figma/*.png): cores medidas por amostragem de pixels dos PNGs exportados.
+   Tema escuro apenas. Contrastes (WCAG 2.x): texto >= 4,5:1; componentes/bordas >= 3:1.
    --------------------------------------------------------------------------- */
 :root {
-  color-scheme: light;
-  --background: #f5f6fb;
-  --surface: #ffffff;
-  --foreground: #0f172a; /* 17,8:1 sobre --background */
-  --muted-foreground: #53607a; /* 5,9:1 sobre branco, 5,3:1 sobre --background */
-  --primary: #4338ca; /* 8,0:1 com texto branco */
-  --primary-2: #6d28d9;
-  --primary-foreground: #ffffff;
-  --secondary: #eef0fb;
-  --secondary-foreground: #312e81;
-  --accent: #eef0fb;
-  --accent-foreground: #312e81;
-  --destructive: #b91c1c;
-  --success: #15803d;
-  --warning: #b45309;
-  --border: #e3e6f0; /* divisorias decorativas */
-  --input: #7a869c; /* >= 3:1 sobre branco e sobre --background (WCAG 1.4.11) */
-  --ring: #4f46e5;
-  --radius-card: 1.25rem;
-  --radius-control: 0.75rem;
-  --shadow-sm: 0 1px 2px rgb(15 23 42 / 0.06), 0 1px 3px rgb(15 23 42 / 0.05);
-  --shadow-md: 0 4px 12px rgb(15 23 42 / 0.07), 0 2px 4px rgb(15 23 42 / 0.05);
-  --shadow-lg: 0 18px 40px -12px rgb(67 56 202 / 0.28), 0 6px 14px rgb(15 23 42 / 0.08);
+  color-scheme: dark;
+  --background: #140d0a; /* fundo da pagina (Figma) */
+  --surface: #241612; /* cards e paineis (Figma) */
+  --surface-2: #2d1c16;
+  --band: #3a2212; /* faixa de contatos do rodape (Figma) */
+  --foreground: #f3e6d6; /* 15,7:1 sobre --background; 14,3:1 sobre --surface */
+  --muted-foreground: #c9a27a; /* bege do Figma: 8,2:1 sobre --background; 7,5:1 sobre --surface */
+  --primary: #d28a4c; /* cobre do Figma: 6,9:1 sobre --background; 6,2:1 sobre --surface */
+  --primary-2: #c47c3f;
+  --primary-foreground: #140d0a; /* texto escuro sobre cobre: 6,9:1 */
+  --secondary: #2d1c16;
+  --secondary-foreground: #f3e6d6;
+  --accent: #33211a; /* hover de itens */
+  --accent-foreground: #e0a06a; /* 7,3:1 sobre --accent */
+  --destructive: #f28b82; /* texto de erro: 7,3:1 sobre --surface */
+  --destructive-solid: #dc2626; /* botao destrutivo, texto branco 4,8:1 */
+  --destructive-soft: #3b1715;
+  --success: #6ee7a0; /* 10:1 sobre --surface */
+  --success-soft: #11301c;
+  --warning: #f5c26b; /* 9,6:1 sobre --surface */
+  --warning-soft: #3a2808;
+  --border: #3a2212; /* divisorias decorativas (linha fina sob o header, cabecalhos de secao) */
+  --input: #8a6246; /* bordas de controles: 3,6:1 sobre --background e 3,3:1 sobre --surface (WCAG 1.4.11) */
+  --ring: #f2c58f; /* foco: 12:1 sobre --background */
+  --radius-card: 0.25rem;
+  --radius-control: 0.25rem;
+  --radius-image: 1rem;
+  --shadow-sm: none;
+  --shadow-md: 0 4px 10px rgb(0 0 0 / 0.35);
+  --shadow-lg: 0 10px 24px rgb(0 0 0 / 0.45);
 }
 @theme inline {
   --color-background: var(--background);
   --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-band: var(--band);
   --color-foreground: var(--foreground);
   --color-primary: var(--primary);
   --color-primary-2: var(--primary-2);
@@ -42,6 +52,10 @@
   --color-accent: var(--accent);
   --color-accent-foreground: var(--accent-foreground);
   --color-destructive: var(--destructive);
+  --color-destructive-solid: var(--destructive-solid);
+  --color-destructive-soft: var(--destructive-soft);
+  --color-success-soft: var(--success-soft);
+  --color-warning-soft: var(--warning-soft);
   --color-success: var(--success);
   --color-warning: var(--warning);
   --color-border: var(--border);
@@ -49,45 +63,45 @@
   --color-ring: var(--ring);
   --radius-card: var(--radius-card);
   --radius-control: var(--radius-control);
+  --radius-image: var(--radius-image);
   --shadow-card: var(--shadow-sm);
   --shadow-lift: var(--shadow-lg);
   --shadow-pop: var(--shadow-md);
-  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Inter, Roboto, "Helvetica Neue", Arial, sans-serif;
+  /* Fonte do Figma: Roboto Mono. Sem baixar fonte: pilha local monoespacada (desvio documentado). */
+  --font-sans: "Roboto Mono", ui-monospace, "Cascadia Mono", "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+  --font-mono: var(--font-sans);
 }
 
 @layer base {
   *, ::after, ::before { border-color: var(--border); }
-  html { -webkit-text-size-adjust: 100%; }
+  html { -webkit-text-size-adjust: 100%; scroll-padding-top: 6rem; }
   body {
-    background:
-      radial-gradient(60rem 28rem at 85% -10%, rgb(99 102 241 / 0.10), transparent 60%),
-      radial-gradient(48rem 24rem at -10% 0%, rgb(139 92 246 / 0.08), transparent 55%),
-      var(--background);
-    background-attachment: fixed;
+    background: var(--background);
     color: var(--foreground);
     font-family: var(--font-sans);
+    font-size: 0.875rem;
     line-height: 1.5;
     -webkit-font-smoothing: antialiased;
   }
-  h1, h2, h3 { letter-spacing: -0.01em; text-wrap: balance; }
+  h1, h2, h3 { text-wrap: balance; }
   a { text-underline-offset: 3px; }
-  :focus-visible { outline: 3px solid var(--ring); outline-offset: 2px; border-radius: 6px; }
-  ::selection { background: rgb(99 102 241 / 0.25); }
+  :focus-visible { outline: 3px solid var(--ring); outline-offset: 2px; border-radius: 4px; }
+  ::selection { background: rgb(210 138 76 / 0.4); }
 }
 
 @layer components {
   .num { font-variant-numeric: tabular-nums; }
-  .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-card); box-shadow: var(--shadow-sm); }
-  .nft-card { transition: transform 0.18s ease, box-shadow 0.18s ease; }
-  .nft-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-lg); }
+  .card { background: var(--surface); border-radius: var(--radius-card); }
+  /* Cabecalho de secao do Figma: titulo cobre em negrito com linha fina cobre abaixo. */
+  .section-title { color: var(--primary); font-weight: 700; padding-bottom: 0.75rem; border-bottom: 1px solid rgb(210 138 76 / 0.45); }
   .nft-card .nft-img { transition: transform 0.35s ease; }
-  .nft-card:hover .nft-img { transform: scale(1.05); }
+  .nft-card:hover .nft-img { transform: scale(1.04); }
 }
 
 .skeleton {
-  background: linear-gradient(90deg, #e6e9f5 25%, #f4f5fb 50%, #e6e9f5 75%);
+  background: linear-gradient(90deg, #2d1c16 25%, #432b1f 50%, #2d1c16 75%);
   background-size: 200% 100%;
-  border-radius: 0.5rem;
+  border-radius: 0.25rem;
   animation: shimmer 1.2s linear infinite;
 }
 @keyframes shimmer {
@@ -96,6 +110,7 @@
 }
 @media (prefers-reduced-motion: reduce) {
   .skeleton { animation: none; }
-  *, ::after, ::before { transition: none !important; }
-  .nft-card:hover, .nft-card:hover .nft-img { transform: none; }
+  html { scroll-behavior: auto !important; }
+  *, ::after, ::before { transition: none !important; animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; }
+  .nft-card:hover .nft-img { transform: none; }
 }

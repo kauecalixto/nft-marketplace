@@ -42,3 +42,16 @@ Os baselines `@visual` foram regenerados após o redesign da interface (ver seç
 - Política de cache/retry e timeout sem teste dedicado (só efeitos observáveis nos E2E); contratos tipados parcialmente.
 - Perfil/carteiras/confirmação sem layout mobile dedicado.
 - `walletLimit = 0` não tem teste (sem fixture).
+
+## Conta (login, perfil, carteiras): controles do Figma sem backend
+- Painel lateral "Meu perfil": só "Dados do perfil" e "Carteiras" existem. Atividade, Lista de interesse, Ofertas, Arquivos baixados e Suporte estão fora do escopo (ENUNCIADO §3) e foram REMOVIDOS em vez de ficarem clicáveis sem efeito; "Sair" fica no header.
+- Login/Cadastro: "Esqueceu a senha?", mostrar/ocultar senha e "confirmar senha" não existem no app (não há recuperação de senha no escopo nem no mock); não foram adicionados controles sem função.
+- Login social (Google/Facebook): simulado por MSW, sem OAuth real (ver `ARCHITECTURE.md`).
+- Carteiras: conectar/desconectar passou a existir também na página de Carteiras (mesmos endpoints do checkout), com testes em `tests/e2e/wallets-connect.spec.ts`.
+
+## Controles do Figma removidos ou simulados (regra "todo botão funciona")
+- Removidos do rodapé por não haver destino nem backend: "Minha coleção", "Atividade", "Lista de interesse" (não há lista de favoritos no perfil), "Política do mercado" e "Denunciar item". "Estúdio do criador" virou "Criadores" (/criadores).
+- Coleção e rede dos NFTs são derivadas no cliente (`src/catalog/taxonomy.ts`), não vêm da API; as contagens são calculadas, não as do Figma. Se a API ganhar os campos `collection`/`network`, trocar a derivação.
+- Newsletter: confirmação local, sem endpoint e sem armazenar o e-mail. Redes sociais apontam para a página inicial de cada rede (não há perfis oficiais).
+- Rodapé (contatos e "Carteiras compatíveis") e a faixa de benefícios são texto não interativo.
+- Não verificados nesta rodada: Carrinho, Pagamento e Confirmação (cobertos só pela suíte existente) e o Detalhe sem "Mais desta coleção"/relacionados (não existem). Auditoria completa fica com o qa-independent.

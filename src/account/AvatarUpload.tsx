@@ -43,9 +43,9 @@ export function AvatarUpload() {
   }
 
   return (
-    <section aria-labelledby="avatar-upload-title" className="card space-y-3 p-6 sm:p-8">
-      <h2 id="avatar-upload-title" className="text-lg font-semibold">Foto do perfil</h2>
-      <label htmlFor="avatar-file" className="block text-sm font-medium">Enviar imagem (até 1 MB)</label>
+    <section aria-labelledby="avatar-upload-title" className="space-y-3">
+      <h2 id="avatar-upload-title" className="text-base font-bold">Foto do perfil</h2>
+      <label htmlFor="avatar-file" className="block text-sm">Enviar imagem (até 1 MB)</label>
       <input
         id="avatar-file"
         data-testid="avatar-file"
@@ -54,13 +54,13 @@ export function AvatarUpload() {
         onChange={onFile}
         aria-invalid={error ? true : undefined}
         aria-describedby={error ? 'avatar-file-error' : undefined}
-        className="block w-full min-w-0 max-w-full rounded-control border border-input bg-surface p-2 text-sm file:mr-3 file:rounded-lg file:border-0 file:bg-secondary file:px-3 file:py-1.5 file:font-semibold file:text-secondary-foreground"
+        className="block w-full min-w-0 max-w-full rounded-control border border-input bg-background p-2 text-sm file:mr-3 file:rounded-control file:border-0 file:bg-primary file:px-3 file:py-1.5 file:font-bold file:text-primary-foreground"
       />
       {error && <p id="avatar-file-error" role="alert" data-testid="avatar-error" className="text-sm font-medium text-destructive">{error}</p>}
       {preview && (
         <div className="space-y-2">
           <img src={preview} alt="Pré-visualização do novo avatar" data-testid="avatar-preview" className="size-16 rounded-full object-cover" />
-          <button type="button" data-testid="avatar-save" disabled={m.isPending} onClick={() => m.mutate(preview)} className="inline-flex h-10 items-center rounded-control bg-linear-to-r from-primary to-primary-2 px-4 text-sm font-semibold text-white shadow-pop focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50">
+          <button type="button" data-testid="avatar-save" disabled={m.isPending} onClick={() => m.mutate(preview)} className="inline-flex h-10 items-center rounded-control bg-primary px-4 text-sm font-bold text-primary-foreground focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50">
             Salvar avatar
           </button>
         </div>

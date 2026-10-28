@@ -8,7 +8,7 @@ export function NftUpdateNotice({ nftIds }: { nftIds: string[] }) {
   const [base] = useState<Record<string, number>>(() => ({ ...noticeStore.get() }))
   const hit = nftIds.some((id) => (counts[id] ?? 0) > (base[id] ?? 0))
   return (
-    <p role="status" data-testid="nft-updated-notice" className={hit ? 'text-sm text-amber-700' : 'sr-only'}>
+    <p role="status" data-testid="nft-updated-notice" className={hit ? 'text-sm text-warning' : 'sr-only'}>
       {hit ? 'Preço ou disponibilidade atualizado' : ''}
     </p>
   )

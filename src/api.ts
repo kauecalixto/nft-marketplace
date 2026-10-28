@@ -42,10 +42,19 @@ api.interceptors.request.use((config) => {
   return config
 })
 
+/** Provedores de login social (SIMULADO por MSW; ver docs/CONTRACTS.md e ARCHITECTURE.md). */
+export type SocialProvider = 'google' | 'facebook'
+export interface SocialAuthUser { id: string; email: string; name: string; avatar: string }
+export interface SocialAuthResponse { token: string; user: SocialAuthUser }
+
+/** POST /auth/social. Mesma forma do login por e-mail/senha; `credential` é opcional e opaca (sem OAuth real). */
+export const loginSocial = async (provider: SocialProvider, credential?: string): Promise<SocialAuthResponse> =>
+  (await api.post<SocialAuthResponse>('/auth/social', { provider, ...(credential ? { credential } : {}) })).data
+
 // Permite que telas salvem rascunho (ex.: checkout) antes do redirecionamento por sessão expirada.
 export const sessionExpiryHooks = new Set<() => void>()
 
-const AUTH_PATHS = ['/auth/login', '/auth/register', '/auth/logout']
+const AUTH_PATHS = ['/auth/login', '/auth/social', '/auth/register', '/auth/logout']
 api.interceptors.response.use(undefined, (error: unknown) => {
   if (axios.isAxiosError(error) && error.response?.status === 401 && !AUTH_PATHS.some((p) => error.config?.url?.includes(p))) {
     const here = window.location.pathname + window.location.search

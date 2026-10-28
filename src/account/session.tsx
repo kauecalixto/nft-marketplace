@@ -2,15 +2,15 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { Link, useNavigate } from '@tanstack/react-router'
 import axios from 'axios'
 import { useSyncExternalStore } from 'react'
-import { api, getToken, setToken, subscribeToken } from '../api'
+import { api, getToken, loginSocial, setToken, subscribeToken, type SocialProvider } from '../api'
 import { queryClient } from '../queryClient'
 import { Avatar } from '../components/Avatar'
 import { buttonVariants } from '../components/ui/button'
 import { LoginIcon, LogoutIcon, UserIcon, WalletIcon } from '../components/icons'
 import { cn } from '../lib/utils'
 
-export const navLink = 'inline-flex h-10 items-center gap-2 rounded-control px-3 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground'
-export const navActive = { className: 'bg-accent text-accent-foreground', 'aria-current': 'page' as const }
+export const navLink = 'inline-flex h-10 items-center gap-2 rounded-control px-2 text-sm font-medium text-foreground no-underline transition-colors hover:text-primary'
+export const navActive = { className: 'text-primary underline decoration-2 underline-offset-8', 'aria-current': 'page' as const }
 
 export interface User { id: string; email: string; name: string; avatar: string }
 export type FieldErrors = Record<string, string>
@@ -40,6 +40,17 @@ export function startSession(token: string, user: User) {
   queryClient.clear() // troca de usuário: descarta dados privados do anterior
   queryClient.setQueryData(sessionQuery.queryKey, user)
   setToken(token)
+}
+
+/**
+ * Login social SIMULADO. Reutiliza `startSession` (cancela queries, limpa cache do usuário anterior, grava a sessão,
+ * `setToken` => o socket reassina com o novo token). Não navega: o chamador usa `router.history.push(safeRedirect(search.redirect))`.
+ * Rejeita com AxiosError (400 INVALID_PROVIDER; 401 PROVIDER_FAILURE/PROVIDER_CANCELLED); use `apiErrors(e).message`.
+ */
+export async function signInWithProvider(provider: SocialProvider, credential?: string): Promise<User> {
+  const { token, user } = await loginSocial(provider, credential)
+  startSession(token, user)
+  return user
 }
 
 export function safeRedirect(r: unknown) {
@@ -74,30 +85,27 @@ export function AccountNav() {
   })
   if (!getToken() || !user)
     return (
-      <>
-        <Link to="/login" search={{}} className={navLink}>
-          <LoginIcon className="size-5" />
-          <span>Entrar</span>
-        </Link>
-        <Link to="/register" className={cn(buttonVariants({ size: 'sm' }), 'text-primary-foreground')}>Cadastrar</Link>
-      </>
+      <Link to="/login" search={{}} className={cn(buttonVariants({ size: 'sm' }), 'ml-1 gap-1.5 no-underline')}>
+        <LoginIcon className="size-5" />
+        <span>Entrar</span>
+      </Link>
     )
   return (
     <>
       <Link to="/profile" className={navLink} activeProps={navActive}>
         <UserIcon className="size-5" />
-        <span className="sr-only sm:not-sr-only">Perfil</span>
+        <span className="sr-only 2xl:not-sr-only">Perfil</span>
       </Link>
       <Link to="/wallets" className={navLink} activeProps={navActive}>
         <WalletIcon className="size-5" />
-        <span className="sr-only sm:not-sr-only">Carteiras</span>
+        <span className="sr-only 2xl:not-sr-only">Carteiras</span>
       </Link>
       <span className="flex items-center gap-2 sm:ml-1 sm:border-l sm:pl-3">
         <Avatar name={user.name} src={user.avatar} />
-        <span data-testid="nav-user" className="max-w-20 truncate text-sm font-medium sm:max-w-40">{user.name}</span>
+        <span data-testid="nav-user" className="sr-only truncate text-sm font-medium sm:not-sr-only sm:max-w-28">{user.name}</span>
         <button data-testid="logout" onClick={() => logout.mutate()} className={cn(navLink, 'px-2')}>
           <LogoutIcon className="size-5" />
-          <span className="sr-only sm:not-sr-only">Sair</span>
+          <span className="sr-only xl:not-sr-only">Sair</span>
         </button>
       </span>
     </>

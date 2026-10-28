@@ -8,6 +8,8 @@ export interface Nft {
   featured?: boolean
   edition: { total: number; available: number }
   walletLimit: number
+  collection?: string // slug de GET /collections (campo aditivo)
+  network?: 'ethereum' | 'polygon' | 'base' // rede de origem (campo aditivo)
 }
 
 export interface NftPage {

@@ -24,7 +24,7 @@ export function NftDetailPage() {
     return <p data-testid="nft-not-found" className="card p-8 text-center text-lg font-semibold">NFT não encontrado</p>
   if (error || !nft)
     return (
-      <p role="alert" className="card flex items-center gap-2 border-red-200 bg-red-50 p-5 font-semibold text-destructive">
+      <p role="alert" className="card flex items-center gap-2 border-destructive/40 bg-destructive-soft p-5 font-semibold text-destructive">
         <AlertIcon className="size-5" />
         Erro ao carregar NFT
       </p>
@@ -32,25 +32,30 @@ export function NftDetailPage() {
   return <Detail nft={nft} />
 }
 
+const galleryGrid = 'grid grid-cols-[minmax(0,1fr)] items-start gap-8 lg:grid-cols-[minmax(0,572px)_minmax(0,1fr)] lg:gap-12'
+const Breadcrumb = () => <p className="mb-4 text-sm font-bold text-foreground">Início / Mercado</p>
+
 function DetailSkeleton() {
-  // espelha Detail: coluna da galeria (imagem quadrada + miniaturas de 64px) e coluna de informações
+  // espelha Detail: coluna da galeria (painel quadrado + miniaturas) e coluna de informações
   return (
-    <div data-testid="skeleton-detail" aria-busy="true" aria-label="Carregando NFT" role="status" className="grid grid-cols-[minmax(0,1fr)] gap-8 lg:grid-cols-2">
-      <div className="space-y-3">
-        <Skeleton className="aspect-square w-full max-w-xl rounded-card" />
-        <div className="flex gap-2">
-          <Skeleton className="size-16 rounded-xl" />
-          <Skeleton className="size-16 rounded-xl" />
-          <Skeleton className="size-16 rounded-xl" />
+    <div data-testid="skeleton-detail" aria-busy="true" aria-label="Carregando NFT" role="status">
+      <Breadcrumb />
+      <div className={galleryGrid}>
+        <div className="flex flex-col-reverse gap-4 lg:flex-row">
+          <div className="flex gap-3 lg:w-[100px] lg:shrink-0 lg:flex-col lg:gap-4">
+            <Skeleton className="size-[72px] rounded-xl lg:size-[100px]" />
+            <Skeleton className="size-[72px] rounded-xl lg:size-[100px]" />
+            <Skeleton className="size-[72px] rounded-xl lg:size-[100px]" />
+          </div>
+          <Skeleton className="aspect-square w-full lg:flex-1" />
         </div>
-      </div>
-      <div className="card space-y-4 p-6">
-        <Skeleton className="h-6 w-28" />
-        <Skeleton className="h-9 w-3/4" />
-        <Skeleton className="h-10 w-40" />
-        <Skeleton className="h-6 w-full max-w-md" />
-        <Skeleton className="h-10 w-36" />
-        <Skeleton className="h-10 w-48" />
+        <div className="min-h-[471px] space-y-4 lg:min-h-0">
+          <Skeleton className="h-9 w-3/4" />
+          <Skeleton className="h-8 w-40" />
+          <Skeleton className="h-6 w-full max-w-md" />
+          <Skeleton className="h-10 w-48" />
+          <Skeleton className="h-12 w-64" />
+        </div>
       </div>
     </div>
   )
@@ -60,11 +65,8 @@ function Gallery({ nft }: { nft: Nft }) {
   const images = nft.images?.length ? nft.images : [nft.image]
   const [sel, setSel] = useState(0)
   return (
-    <div data-testid="gallery" className="space-y-3">
-      <div className="card max-w-xl overflow-hidden p-2">
-        <img data-testid="gallery-main" src={images[sel]} alt={`${nft.name} - imagem ${sel + 1} de ${images.length}`} width={400} height={400} className="block aspect-square w-full rounded-[0.9rem] object-cover" />
-      </div>
-      <ul className="flex flex-wrap gap-2" aria-label="Miniaturas">
+    <div data-testid="gallery" className="flex flex-col-reverse gap-4 lg:flex-row">
+      <ul className="flex gap-3 lg:w-[100px] lg:shrink-0 lg:flex-col lg:gap-4" aria-label="Miniaturas">
         {images.map((src, i) => (
           <li key={i}>
             <button
@@ -73,13 +75,16 @@ function Gallery({ nft }: { nft: Nft }) {
               aria-label={`Ver imagem ${i + 1} de ${images.length}`}
               aria-pressed={i === sel}
               onClick={() => setSel(i)}
-              className={`block rounded-xl border-2 p-0.5 transition-[border-color,box-shadow] duration-150 focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring focus-visible:ring-offset-2 ${i === sel ? 'border-primary shadow-pop' : 'border-transparent opacity-80 hover:opacity-100'}`}
+              className={`block rounded-xl border-2 p-0.5 transition-[border-color] duration-150 focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background ${i === sel ? 'border-primary' : 'border-transparent opacity-80 hover:opacity-100'}`}
             >
-              <img src={src} alt="" width={64} height={64} className="size-16 rounded-[0.6rem] object-cover" />
+              <img src={src} alt="" width={100} height={100} loading="lazy" decoding="async" className="size-16 rounded-[0.6rem] object-cover lg:size-[92px]" />
             </button>
           </li>
         ))}
       </ul>
+      <div className="card min-w-0 p-3 sm:p-5 lg:flex-1">
+        <img data-testid="gallery-main" src={images[sel]} alt={`${nft.name} - imagem ${sel + 1} de ${images.length}`} width={640} height={640} loading="eager" fetchPriority="high" decoding="async" className="block aspect-square w-full rounded-3xl object-cover" />
+      </div>
     </div>
   )
 }
@@ -96,90 +101,98 @@ function Detail({ nft }: { nft: Nft }) {
     mutationFn: async () => api.post('/cart', { nftId: nft.id, quantity: qty }),
   })
   return (
-    <article className="grid grid-cols-[minmax(0,1fr)] items-start gap-8 lg:grid-cols-2">
-      <Gallery nft={nft} />
-      <div className="card space-y-4 p-6 sm:p-8">
-        <div>
-          <Link to="/" className="text-sm font-medium text-muted-foreground hover:text-primary">← Voltar ao catálogo</Link>
-        </div>
-        <div className="flex flex-wrap items-start justify-between gap-3">
-          <h1 className="break-words text-3xl font-extrabold">{nft.name}</h1>
-          <FavoriteButton nftId={nft.id} />
-        </div>
-        <div className="rounded-2xl bg-secondary p-4">
-          <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Preço</p>
-          <p className="num text-3xl font-extrabold text-primary">{nft.price} ETH</p>
-        </div>
-        <NftUpdateNotice nftIds={[nft.id]} />
-        <p className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
-          <Badge variant={unavailable ? 'destructive' : 'success'}>{unavailable ? 'Indisponível' : 'Disponível'}</Badge>
-          <span>
-            Edição: {nft.edition.available} de {nft.edition.total} disponíveis (limite por carteira: {nft.walletLimit})
-          </span>
-        </p>
-        {unavailable && nft.edition.available <= 0 && (
-          <p data-testid="edition-unavailable" className="flex items-center gap-2 rounded-xl bg-red-50 p-3 text-sm font-semibold text-destructive"><AlertIcon className="size-5 shrink-0" />Edição indisponível</p>
-        )}
-        {unavailable && nft.edition.available > 0 && (
-          <p data-testid="wallet-quota-unavailable" className="flex items-center gap-2 rounded-xl bg-amber-50 p-3 text-sm font-semibold text-warning"><InfoIcon className="size-5 shrink-0" />Sem cota para esta carteira</p>
-        )}
-        {!unavailable && (
-          <div className="flex items-center gap-2" role="group" aria-label="Seletor de quantidade">
-            <Button
-              type="button"
-              variant="outline"
-              size="icon"
-              data-testid="quantity-decrease"
-              aria-label="Diminuir quantidade"
-              disabled={qty <= 1}
-              onClick={() => setQty(clamp(qty - 1))}
-            >
-              <MinusIcon className="size-4" />
-            </Button>
-            <Input
-              data-testid="quantity-input"
-              aria-label="Quantidade"
-              type="number"
-              step={1}
-              min={1}
-              max={max}
-              value={empty ? '' : qty}
-              onChange={(e) => {
-                if (e.target.value === '') return setEmpty(true)
-                setEmpty(false)
-                setQty(clamp(Number(e.target.value)))
-              }}
-              onBlur={() => setEmpty(false)}
-              className="num w-20 text-center text-base font-semibold"
-            />
-            <Button
-              type="button"
-              variant="outline"
-              size="icon"
-              data-testid="quantity-increase"
-              aria-label="Aumentar quantidade"
-              disabled={atMax}
-              onClick={() => setQty(clamp(qty + 1))}
-            >
-              <PlusIcon className="size-4" />
-            </Button>
+    <article>
+      <Breadcrumb />
+      <div className={galleryGrid}>
+        <Gallery nft={nft} />
+        <div className="min-w-0 space-y-4">
+          <div>
+            <Link to="/" className="text-sm text-muted-foreground hover:text-primary">← Voltar ao catálogo</Link>
           </div>
-        )}
-        {atMax && <p data-testid="quantity-limit-message" className="flex items-center gap-2 text-sm font-medium text-warning"><InfoIcon className="size-4 shrink-0" />Limite de quantidade atingido</p>}
-        <div className="flex flex-wrap gap-3 pt-1">
-          <Button
-            data-testid="add-to-cart"
-            size="lg"
-            className="h-auto min-h-11 whitespace-normal py-2 text-center"
-            disabled={unavailable || add.isPending}
-            onClick={() => add.mutate()}
-          >
-            <CartIcon className="size-5" />
-            Adicionar ao carrinho
-          </Button>
+          <h1 className="break-words text-[28px] font-bold leading-9">{nft.name}</h1>
+          <div className="border-b border-primary/45 pb-3">
+            <p className="num text-[22px] font-bold leading-8 text-primary">{nft.price} ETH</p>
+          </div>
+          <NftUpdateNotice nftIds={[nft.id]} />
+          <div className="space-y-2">
+            <p className="font-bold">Edição:</p>
+            <p className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
+              <Badge variant={unavailable ? 'destructive' : 'success'}>{unavailable ? 'Indisponível' : 'Disponível'}</Badge>
+              <span>
+                Edição: {nft.edition.available} de {nft.edition.total} disponíveis (limite por carteira: {nft.walletLimit})
+              </span>
+            </p>
+          </div>
+          {unavailable && nft.edition.available <= 0 && (
+            <p data-testid="edition-unavailable" className="flex items-center gap-2 rounded-card bg-destructive-soft p-3 text-sm font-semibold text-destructive"><AlertIcon className="size-5 shrink-0" />Edição indisponível</p>
+          )}
+          {unavailable && nft.edition.available > 0 && (
+            <p data-testid="wallet-quota-unavailable" className="flex items-center gap-2 rounded-card bg-warning-soft p-3 text-sm font-semibold text-warning"><InfoIcon className="size-5 shrink-0" />Sem cota para esta carteira</p>
+          )}
+          <div className="flex flex-wrap items-center gap-x-6 gap-y-3">
+            {!unavailable && (
+              <div className="flex items-center gap-2" role="group" aria-label="Seletor de quantidade">
+                <Button
+                  type="button"
+                  size="icon"
+                  className="rounded-full"
+                  data-testid="quantity-decrease"
+                  aria-label="Diminuir quantidade"
+                  disabled={qty <= 1}
+                  onClick={() => setQty(clamp(qty - 1))}
+                >
+                  <MinusIcon className="size-4" />
+                </Button>
+                <Input
+                  data-testid="quantity-input"
+                  aria-label="Quantidade"
+                  type="number"
+                  step={1}
+                  min={1}
+                  max={max}
+                  value={empty ? '' : qty}
+                  onChange={(e) => {
+                    if (e.target.value === '') return setEmpty(true)
+                    setEmpty(false)
+                    setQty(clamp(Number(e.target.value)))
+                  }}
+                  onBlur={() => setEmpty(false)}
+                  className="num w-16 text-center text-base"
+                />
+                <Button
+                  type="button"
+                  size="icon"
+                  className="rounded-full"
+                  data-testid="quantity-increase"
+                  aria-label="Aumentar quantidade"
+                  disabled={atMax}
+                  onClick={() => setQty(clamp(qty + 1))}
+                >
+                  <PlusIcon className="size-4" />
+                </Button>
+              </div>
+            )}
+            <div className="flex flex-wrap items-start gap-3">
+              <Button
+                data-testid="add-to-cart"
+                className="h-auto min-h-10 whitespace-normal py-2 text-center"
+                disabled={unavailable || add.isPending}
+                onClick={() => add.mutate()}
+              >
+                <CartIcon className="size-5" />
+                Adicionar ao carrinho
+              </Button>
+              <FavoriteButton nftId={nft.id} />
+            </div>
+          </div>
+          {atMax && <p data-testid="quantity-limit-message" className="flex items-center gap-2 text-sm font-medium text-warning"><InfoIcon className="size-4 shrink-0" />Limite de quantidade atingido</p>}
+          {add.isSuccess && <p role="status" className="flex items-center gap-2 rounded-card bg-success-soft p-3 text-sm font-semibold text-success"><CheckCircleIcon className="size-5 shrink-0" />Adicionado ao carrinho ({qty})</p>}
+          {add.isError && <p role="alert" className="flex items-center gap-2 rounded-card bg-destructive-soft p-3 text-sm font-semibold text-destructive"><AlertIcon className="size-5 shrink-0" />Não foi possível adicionar ao carrinho</p>}
+          <ul className="space-y-1.5 text-sm text-muted-foreground">
+            <li>ID do token: <span className="break-all">{nft.id}</span></li>
+            <li>Criador: <Link to="/criadores" className="break-all text-primary hover:underline">{nft.creator}</Link></li>
+          </ul>
         </div>
-        {add.isSuccess && <p role="status" className="flex items-center gap-2 rounded-xl bg-green-50 p-3 text-sm font-semibold text-success"><CheckCircleIcon className="size-5 shrink-0" />Adicionado ao carrinho ({qty})</p>}
-        {add.isError && <p role="alert" className="flex items-center gap-2 rounded-xl bg-red-50 p-3 text-sm font-semibold text-destructive"><AlertIcon className="size-5 shrink-0" />Não foi possível adicionar ao carrinho</p>}
       </div>
     </article>
   )
