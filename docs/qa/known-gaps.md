@@ -3,21 +3,20 @@
 Estado atual, baseado em leitura de código/testes e na última execução completa. Itens ligados à matriz em `docs/requirements/requirements-matrix.md`. Resultados de execução: `reports/implementation-status.md` e `reports/qa-report.md` (o QA r4 é anterior às últimas mudanças de UI e não foi refeito).
 
 ## Última execução completa (Playwright)
-`npx playwright test`: 169 passed, 0 failed (desktop 1440, tablet 768 e mobile 390; inclui os 3 testes `@visual`). Typecheck, lint, `test:unit` (3 testes) e `build:demo` passam.
+`npx playwright test`: 216 passed, 0 failed (desktop 1440, tablet 768 e mobile 390; inclui os 3 testes `@visual`), em 2026-10-28. Typecheck, lint, `test:unit` (3 testes) e `build:demo` passam.
 Os baselines `@visual` foram regenerados após o redesign da interface (ver seção "Design" em `ARCHITECTURE.md`); são `*-win32.png` e só valem no Windows.
 
 ## Ainda faltam (alto impacto)
 - Deploy público (§12): `vercel.json` (build:demo, dist, rewrite SPA) existe e o fallback foi testado com `vite preview`, mas NENHUM deploy foi realizado; sem URL pública.
-- PR no fork: não aberto. Nada foi commitado nem enviado.
-- Fidelidade ao Figma: sem acesso ao Figma; sem tokens/frames. NÃO IMPLEMENTADO.
+- PR no fork: não aberto. O código está na `main` de `kauecalixto/nft-marketplace` (repositório não é fork).
+- Fidelidade ao Figma: implementada a partir dos 15 frames em PNG (sem Dev Mode); mobile parcial. Ver `ARCHITECTURE.md`, seção Design.
 - Auditoria axe (@axe-core): não existe. Há correções de acessibilidade com teste (`a11y-fixes.spec.ts`, `a11y-keyboard.spec.ts`, `order-live-region.spec.ts`), mas nenhuma varredura automática por regras axe.
-- CI: `.github/workflows/ci.yml` existe, mas NUNCA rodou no GitHub (sem push). Ele executa `--grep-invert @visual` porque os baselines só valem em win32.
+- CI: `.github/workflows/ci.yml` roda no GitHub a cada push (o de `356009e` passou, com o design final). Ele executa `--grep-invert @visual` porque os baselines só valem em win32.
 - Baselines `@visual` só em win32: não validam em Linux/CI (o CI roda `--grep-invert @visual`).
-- Lighthouse: as medições em `reports/lighthouse/` são anteriores ao redesign e precisam ser repetidas.
+- Lighthouse: refeito em 2026-10-28 no build final (Perf 91-100, A11y/BP/SEO 100); ver `reports/lighthouse/README.md`.
 - Pagamento parcial: não existe. O app e os mocks montam a cotação e o pedido do carrinho INTEIRO. Isso diverge da spec de `docs/pedido-unico-sem-duplicidade-spec.md` (pressuposto de pagar por parte do carrinho); detalhes em `REVIEW.md`.
 - Spec `docs/pedido-unico-sem-duplicidade-spec.md`: R-04 (preservar itens em falha) ficou fora dos cinco EARS; o app já mantém o carrinho em recusa (`OrderPage`, `CheckoutPage`), mas sem critério/teste próprio dessa spec.
 - shadcn/ui: usado em AuthPages, PrivatePages, HomePage, NftDetailPage, CartPage, CheckoutPage e OrderPage; cobertura total não auditada.
-- Lighthouse: última rodada em `reports/lighthouse/README.md`; a UI mudou depois, então precisa de nova rodada.
 
 ## Já existe (antes listado como lacuna)
 - Especificação da semana 5 também na ferramenta alternativa: OpenSpec (`openspec/changes/limite-quantidade-edicao/`, `openspec validate limite-quantidade-edicao --strict` válido, CLI 1.15.0) e TLC (`.specs/features/quantity-limit/spec.md`, `validate_spec.py` com 0 erros e 0 avisos). Comparação em `DIFERENCAS.md`. Ver ressalva sobre `docs/comparacao-ferramentas.md` em `docs/README.md`.

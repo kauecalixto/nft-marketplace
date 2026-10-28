@@ -65,9 +65,9 @@ Divergência a conhecer antes de avaliar a semana 6: o app monta o pedido a part
 
 ## Qualidade e CI
 - `npm run verify` roda typecheck, lint, teste unitário e `build:demo`.
-- Última execução completa conhecida: `npx playwright test` com 169 passed e 0 failed (inclui `@visual`, com baselines regenerados após o redesign).
+- Última execução completa conhecida: `npx playwright test` com 216 passed e 0 failed (inclui `@visual`, com baselines regenerados após o redesign).
 - A regressão visual é só local: os baselines versionados são `*-win32.png` e não valem em Linux.
-- O workflow `.github/workflows/ci.yml` (typecheck, lint, unit, build:demo e `playwright test --grep-invert @visual`) existe, mas **ainda NÃO rodou no GitHub**: não houve push.
+- O workflow `.github/workflows/ci.yml` (typecheck, lint, unit, build:demo e `playwright test --grep-invert @visual`) roda no GitHub a cada push (execução do commit `356009e`, com o design final, concluída com sucesso em ~11 min).
 - Relatórios: `reports/qa-report.md`, `reports/lighthouse/`.
 
 ## Estrutura de pastas
@@ -98,12 +98,13 @@ reports/      QA, status, validação, Lighthouse
 ## Deploy
 `vercel.json` existe (build `npm run build:demo`, saída `dist`, fallback SPA para `/index.html`). **Nenhum deploy foi feito** e não há URL pública. O fallback foi verificado localmente com `vite preview` (`tests/e2e/deep-route.spec.ts`), não na Vercel.
 
-## Limitações — o desafio completo NÃO está entregue
-- Deploy público não realizado (apenas configuração). PR no fork não aberto. Nada foi commitado nem enviado.
-- Fidelidade ao Figma não verificada (sem acesso ao arquivo).
-- Auditoria axe ausente (há testes de teclado, foco, região viva e zoom/reflow do diálogo de revisão, mas não varredura axe).
+## Limitações
+- **Deploy público não realizado** (apenas `vercel.json`): exige conta e autorização do autor. O enunciado (§12) torna o deploy obrigatório, então este é o principal item pendente.
+- Fidelidade ao Figma: baseada nos 15 frames exportados em PNG (sem Dev Mode); desktop próximo, mobile parcial (sem barra de abas inferior nem telas de login em tela cheia). Desvios em `ARCHITECTURE.md`.
+- Fonte monoespaçada via pilha local (Roboto Mono, Cascadia, Consolas), sem arquivo da fonte do Figma.
+- Login com Google e Facebook é **simulado** por MSW (`POST /api/auth/social`); a integração real exigiria client IDs e um backend.
+- Auditoria axe ausente (há testes de teclado, foco, região viva e zoom/reflow, mas não varredura axe).
 - Pagamento parcial inexistente: o pedido é sempre do carrinho inteiro.
-- Baselines `@visual` só valem em Windows; CI ainda não executado no GitHub; Lighthouse anterior ao redesign.
-- shadcn/ui usado nas telas de autenticação, perfil/carteiras, catálogo, detalhe, carrinho, checkout e pedido; cobertura total não auditada.
+- Baselines `@visual` só valem em Windows; o CI roda `--grep-invert @visual`.
 - Mocks: Socket.IO só websocket, namespace `/`; estado em memória/navegador.
 Veja `docs/qa/known-gaps.md`.
