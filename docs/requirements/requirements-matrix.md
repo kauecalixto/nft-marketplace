@@ -88,4 +88,4 @@ Estados: IMPLEMENTADO / PARCIAL / NÃO IMPLEMENTADO, avaliados por leitura de c�
 
 | REQ-82 | Lighthouse: 3 execuções por página/perfil, config versionada, relatórios (§10) | §10 | Entrega | scripts/lighthouse.mjs, reports/lighthouse/ | - | IMPLEMENTADO | rerodado em 2026-10-28 no build final; medianas em `reports/lighthouse/README.md` (Perf 91-100, A11y/BP/SEO 100) |
 | REQ-83 | Script de lint e demais comandos de entrega (§12) | §12 | Entrega | package.json | - | IMPLEMENTADO | scripts `lint`, `test:unit`, `test:visual`, `test:e2e` |
-| REQ-84 | Deploy público (§12) | §12 | Entrega | vercel.json | deep-route.spec (preview local) | PARCIAL | configuração existe (build:demo, dist, rewrite SPA); NENHUM deploy realizado, sem URL pública |
+| REQ-84 | Deploy público (§12) | §12 | Entrega | vercel.json | deep-route.spec (preview local e URL publicada) | IMPLEMENTADO e TESTADO | https://nft-marketplace-sable.vercel.app (Vercel, produção, 2026-10-28); E2E contra a URL: 122 passaram (sem `@visual`/`interativos`, que bloqueiam origens não locais) |

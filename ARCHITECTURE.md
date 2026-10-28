@@ -105,4 +105,4 @@ Baseado nos **15 frames reais do Figma** exportados em PNG (exportados do arquiv
 `public/robots.txt`, `<meta name="description">` e landmark `<main>` existem. `scripts/lighthouse.mjs` (`npm run audit:lighthouse`, preview na porta 4180) grava em `reports/lighthouse/`; resultados e causas em `reports/lighthouse/README.md` (medianas de 3 execuções por combinação; precisam ser refeitas se a UI mudar, e a UI mudou depois da última rodada). Deploy público NÃO IMPLEMENTADO (script `lint` e rota 404 implementados).
 
 ## Limitações conhecidas
-Lista viva em `docs/qa/known-gaps.md`. Principais: sem deploy público nem URL; Figma só por PNGs exportados (sem Dev Mode; fonte substituída por pilha local); sem auditoria axe; o carrinho inteiro vira o pedido (não existe pagamento parcial); CI em `.github/workflows/ci.yml` ainda não rodou no GitHub; baselines visuais só win32.
+Lista viva em `docs/qa/known-gaps.md`. Principais: Figma só por PNGs exportados (sem Dev Mode; fonte substituída por pilha local); sem auditoria axe; o carrinho inteiro vira o pedido (não existe pagamento parcial); CI em `.github/workflows/ci.yml` ainda não rodou no GitHub; baselines visuais só win32.

@@ -7,7 +7,7 @@ Estado atual, baseado em leitura de código/testes e na última execução compl
 Os baselines `@visual` foram regenerados após o redesign da interface (ver seção "Design" em `ARCHITECTURE.md`); são `*-win32.png` e só valem no Windows.
 
 ## Ainda faltam (alto impacto)
-- Deploy público (§12): `vercel.json` (build:demo, dist, rewrite SPA) existe e o fallback foi testado com `vite preview`, mas NENHUM deploy foi realizado; sem URL pública.
+- Deploy público (§12): feito em https://nft-marketplace-sable.vercel.app (Vercel, produção). Rotas diretas e refresh verificados; E2E executado contra a URL (122 passaram, sem `@visual` nem `interativos`).
 - PR no fork: não aberto. O código está na `main` de `kauecalixto/nft-marketplace` (repositório não é fork).
 - Fidelidade ao Figma: implementada a partir dos 15 frames em PNG (sem Dev Mode); mobile parcial. Ver `ARCHITECTURE.md`, seção Design.
 - Auditoria axe (@axe-core): não existe. Há correções de acessibilidade com teste (`a11y-fixes.spec.ts`, `a11y-keyboard.spec.ts`, `order-live-region.spec.ts`), mas nenhuma varredura automática por regras axe.

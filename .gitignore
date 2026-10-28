@@ -22,3 +22,5 @@ docs/design/
 .playwright-mcp/
 docs/PROJECT-STRUCTURE.md
 docs/comparacao-ferramentas.md
+
+.vercel

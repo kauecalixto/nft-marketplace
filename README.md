@@ -96,10 +96,10 @@ reports/      QA, status, validação, Lighthouse
 - Tudo em um só lugar: `docs/README.md`.
 
 ## Deploy
-`vercel.json` existe (build `npm run build:demo`, saída `dist`, fallback SPA para `/index.html`). **Nenhum deploy foi feito** e não há URL pública. O fallback foi verificado localmente com `vite preview` (`tests/e2e/deep-route.spec.ts`), não na Vercel.
+**URL pública:** https://nft-marketplace-sable.vercel.app (Vercel, produção, build `npm run build:demo` com mocks MSW). `vercel.json` define o build, a saída `dist` e o fallback SPA, então acesso direto e refresh das rotas funcionam (`/nfts/nft-1`, `/cart`, `/criadores`...). Credenciais fictícias e cenários de falha: seções acima. Publicado em 2026-10-28 a partir do commit `eb4f657`; o E2E do projeto (sem `@visual`) foi executado contra essa URL: 122 testes passaram; `interativos.spec.ts` não se aplica ali porque bloqueia por desenho qualquer origem diferente de `localhost`.
 
 ## Limitações
-- **Deploy público não realizado** (apenas `vercel.json`): exige conta e autorização do autor. O enunciado (§12) torna o deploy obrigatório, então este é o principal item pendente.
+- O deploy público existe (Vercel), mas a Vercel só serve a branch `main` quando o autor republica; a versão publicada corresponde ao commit indicado na seção Deploy.
 - Fidelidade ao Figma: baseada nos 15 frames exportados em PNG (sem Dev Mode); desktop próximo, mobile parcial (sem barra de abas inferior nem telas de login em tela cheia). Desvios em `ARCHITECTURE.md`.
 - Fonte monoespaçada via pilha local (Roboto Mono, Cascadia, Consolas), sem arquivo da fonte do Figma.
 - Login com Google e Facebook é **simulado** por MSW (`POST /api/auth/social`); a integração real exigiria client IDs e um backend.
