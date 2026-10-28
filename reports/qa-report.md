@@ -52,7 +52,7 @@ Extras do §9: regressão visual com baselines (visual-regression.spec, 4 telas)
 - ARCHITECTURE.md e docs/CONTRACTS.md existem.
 - Há comandos para dev, build, preview, typecheck, lint, test, audit:lighthouse.
 - `vercel.json` está correto: `framework: vite`, `buildCommand: npm run build:demo` (mocks ativos), `outputDirectory: dist`, rewrite SPA que exclui `assets/` e `mockServiceWorker.js`. Não foi testado em ambiente real.
-- Lighthouse (`reports/lighthouse/README.md`): 12 execuções, medianas todas acima das metas (Perf 96-100, A11y/BP/SEO 100, LCP mobile 2.1-2.4 s). Ressalva: perfil do Chromium reaproveitado, com avisos de IndexedDB.
+- Lighthouse (`reports/lighthouse/README.md`): 12 execuções, medianas todas acima das metas (Perf 91-100, A11y/BP/SEO 100, LCP mobile 2.6-2.8 s; rodada de 2026-10-28 no build final). Ressalva: perfil do Chromium reaproveitado, com avisos de IndexedDB.
 
 ## Segredos
 Grep por token, secret, api_key e password com atribuição literal em `src`, `scripts` e `*.md` achou só mensagens de validação e campos de formulário, sem segredo. `.env` tem `VITE_API_URL=/api` e `VITE_ENABLE_MOCKS=false`. `.env.demo` tem `VITE_API_URL=/api` e `VITE_ENABLE_MOCKS=true`. Só variáveis públicas.

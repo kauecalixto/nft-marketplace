@@ -86,6 +86,6 @@ Estados: IMPLEMENTADO / PARCIAL / NÃO IMPLEMENTADO, avaliados por leitura de c�
 | REQ-80 | Chromium em desktop e mobile; regressão visual com baselines | §9 | Testes | playwright.config.ts | visual-regression.spec | IMPLEMENTADO | projetos desktop/tablet/mobile; `toHaveScreenshot` com baselines em `visual-regression.spec.ts-snapshots` |
 | REQ-81 | Isolamento por teste; relógio/latência controlados; relatório HTML e traces | §9 | Testes | playwright.config.ts | realtime-checkout.spec (`page.clock`) | IMPLEMENTADO | reporter html, trace retain-on-failure, relógio controlado no timeout de pagamento |
 
-| REQ-82 | Lighthouse: 3 execuções por página/perfil, config versionada, relatórios (§10) | §10 | Entrega | scripts/lighthouse.mjs, reports/lighthouse/ | - | IMPLEMENTADO | rerodado em 2026-10-21; medianas em `reports/lighthouse/README.md` (Perf 96-100, A11y/BP/SEO 100) |
+| REQ-82 | Lighthouse: 3 execuções por página/perfil, config versionada, relatórios (§10) | §10 | Entrega | scripts/lighthouse.mjs, reports/lighthouse/ | - | IMPLEMENTADO | rerodado em 2026-10-28 no build final; medianas em `reports/lighthouse/README.md` (Perf 91-100, A11y/BP/SEO 100) |
 | REQ-83 | Script de lint e demais comandos de entrega (§12) | §12 | Entrega | package.json | - | IMPLEMENTADO | scripts `lint`, `test:unit`, `test:visual`, `test:e2e` |
 | REQ-84 | Deploy público (§12) | §12 | Entrega | vercel.json | deep-route.spec (preview local) | PARCIAL | configuração existe (build:demo, dist, rewrite SPA); NENHUM deploy realizado, sem URL pública |

@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-21T21:58:01.254Z",
+  "generatedAt": "2026-10-28T14:24:48.344Z",
   "lighthouse": "13.5.0",
   "chromeLauncher": "1.2.2",
   "chromePath": "C:\\Users\\kaues\\AppData\\Local\\ms-playwright\\chromium-1248\\chrome-win64\\chrome.exe",
@@ -21,27 +21,27 @@
         {
           "run": 1,
           "scores": {
-            "performance": 97,
+            "performance": 91,
             "accessibility": 100,
             "best-practices": 100,
             "seo": 100
           },
-          "lcpMs": 2142.208,
+          "lcpMs": 2925.554,
           "cls": 0,
-          "tbtMs": 123.5,
+          "tbtMs": 217,
           "runWarnings": []
         },
         {
           "run": 2,
           "scores": {
-            "performance": 98,
+            "performance": 91,
             "accessibility": 100,
             "best-practices": 100,
             "seo": 100
           },
-          "lcpMs": 2120.7624,
+          "lcpMs": 2820.79475,
           "cls": 0,
-          "tbtMs": 111.5,
+          "tbtMs": 238,
           "runWarnings": [
             "There may be stored data affecting loading performance in this location: IndexedDB. Audit this page in an incognito window to prevent those resources from affecting your scores."
           ]
@@ -49,27 +49,27 @@
         {
           "run": 3,
           "scores": {
-            "performance": 98,
+            "performance": 90,
             "accessibility": 100,
             "best-practices": 100,
             "seo": 100
           },
-          "lcpMs": 2118.4132,
+          "lcpMs": 2843.3830000000003,
           "cls": 0,
-          "tbtMs": 116,
+          "tbtMs": 273.5,
           "runWarnings": [
             "There may be stored data affecting loading performance in this location: IndexedDB. Audit this page in an incognito window to prevent those resources from affecting your scores."
           ]
         }
       ],
       "median": {
-        "performance": 98,
+        "performance": 91,
         "accessibility": 100,
         "best-practices": 100,
         "seo": 100,
-        "lcpMs": 2120.7624,
+        "lcpMs": 2843.3830000000003,
         "cls": 0,
-        "tbtMs": 116
+        "tbtMs": 238
       }
     },
     {
@@ -80,14 +80,14 @@
         {
           "run": 1,
           "scores": {
-            "performance": 96,
+            "performance": 92,
             "accessibility": 100,
             "best-practices": 100,
             "seo": 100
           },
-          "lcpMs": 2413.2465,
+          "lcpMs": 2701.109,
           "cls": 0,
-          "tbtMs": 111,
+          "tbtMs": 212,
           "runWarnings": [
             "There may be stored data affecting loading performance in this location: IndexedDB. Audit this page in an incognito window to prevent those resources from affecting your scores."
           ]
@@ -95,14 +95,14 @@
         {
           "run": 2,
           "scores": {
-            "performance": 96,
+            "performance": 94,
             "accessibility": 100,
             "best-practices": 100,
             "seo": 100
           },
-          "lcpMs": 2405.6345,
+          "lcpMs": 2630.19775,
           "cls": 0,
-          "tbtMs": 129.5,
+          "tbtMs": 177,
           "runWarnings": [
             "There may be stored data affecting loading performance in this location: IndexedDB. Audit this page in an incognito window to prevent those resources from affecting your scores."
           ]
@@ -110,27 +110,27 @@
         {
           "run": 3,
           "scores": {
-            "performance": 96,
+            "performance": 94,
             "accessibility": 100,
             "best-practices": 100,
             "seo": 100
           },
-          "lcpMs": 2405.6234999999997,
+          "lcpMs": 2646.33075,
           "cls": 0,
-          "tbtMs": 127,
+          "tbtMs": 159,
           "runWarnings": [
             "There may be stored data affecting loading performance in this location: IndexedDB. Audit this page in an incognito window to prevent those resources from affecting your scores."
           ]
         }
       ],
       "median": {
-        "performance": 96,
+        "performance": 94,
         "accessibility": 100,
         "best-practices": 100,
         "seo": 100,
-        "lcpMs": 2405.6345,
+        "lcpMs": 2646.33075,
         "cls": 0,
-        "tbtMs": 127
+        "tbtMs": 177
       }
     },
     {
@@ -146,9 +146,9 @@
             "best-practices": 100,
             "seo": 100
           },
-          "lcpMs": 574.1455000000001,
-          "cls": 0.00447180923439294,
-          "tbtMs": 0,
+          "lcpMs": 769.53125,
+          "cls": 0,
+          "tbtMs": 3,
           "runWarnings": [
             "There may be stored data affecting loading performance in this location: IndexedDB. Audit this page in an incognito window to prevent those resources from affecting your scores."
           ]
@@ -161,9 +161,9 @@
             "best-practices": 100,
             "seo": 100
           },
-          "lcpMs": 573.53725,
-          "cls": 0.0006347695311532352,
-          "tbtMs": 0,
+          "lcpMs": 777.26025,
+          "cls": 0,
+          "tbtMs": 3.5,
           "runWarnings": [
             "There may be stored data affecting loading performance in this location: IndexedDB. Audit this page in an incognito window to prevent those resources from affecting your scores."
           ]
@@ -176,9 +176,9 @@
             "best-practices": 100,
             "seo": 100
           },
-          "lcpMs": 573.90725,
-          "cls": 0.0006347695311532352,
-          "tbtMs": 0,
+          "lcpMs": 784.10775,
+          "cls": 0,
+          "tbtMs": 11,
           "runWarnings": [
             "There may be stored data affecting loading performance in this location: IndexedDB. Audit this page in an incognito window to prevent those resources from affecting your scores."
           ]
@@ -189,9 +189,9 @@
         "accessibility": 100,
         "best-practices": 100,
         "seo": 100,
-        "lcpMs": 573.90725,
-        "cls": 0.0006347695311532352,
-        "tbtMs": 0
+        "lcpMs": 777.26025,
+        "cls": 0,
+        "tbtMs": 3.5
       }
     },
     {
@@ -207,7 +207,7 @@
             "best-practices": 100,
             "seo": 100
           },
-          "lcpMs": 569.2887499999999,
+          "lcpMs": 683.0235,
           "cls": 0,
           "tbtMs": 0,
           "runWarnings": [
@@ -222,9 +222,9 @@
             "best-practices": 100,
             "seo": 100
           },
-          "lcpMs": 565.979,
+          "lcpMs": 722.2065,
           "cls": 0,
-          "tbtMs": 0,
+          "tbtMs": 9.5,
           "runWarnings": [
             "There may be stored data affecting loading performance in this location: IndexedDB. Audit this page in an incognito window to prevent those resources from affecting your scores."
           ]
@@ -237,9 +237,9 @@
             "best-practices": 100,
             "seo": 100
           },
-          "lcpMs": 567.6565,
+          "lcpMs": 640.98125,
           "cls": 0,
-          "tbtMs": 0,
+          "tbtMs": 0.5,
           "runWarnings": [
             "There may be stored data affecting loading performance in this location: IndexedDB. Audit this page in an incognito window to prevent those resources from affecting your scores."
           ]
@@ -250,9 +250,9 @@
         "accessibility": 100,
         "best-practices": 100,
         "seo": 100,
-        "lcpMs": 567.6565,
+        "lcpMs": 683.0235,
         "cls": 0,
-        "tbtMs": 0
+        "tbtMs": 0.5
       }
     }
   ]

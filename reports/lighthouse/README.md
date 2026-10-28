@@ -10,12 +10,12 @@ Emulacao: mobile = padrao do Lighthouse (Moto G Power, slow 4G simulado, CPU 4x)
 
 | Pagina | Modo | Perf | A11y | BP | SEO | LCP | CLS | TBT |
 |---|---|---|---|---|---|---|---|---|
-| Inicio `/` | mobile | 98 | 100 | 100 | 100 | 2.12 s | 0 | 116 ms |
-| Detalhe `/nfts/nft-1` | mobile | 96 | 100 | 100 | 100 | 2.41 s | 0 | 127 ms |
-| Inicio `/` | desktop | 100 | 100 | 100 | 100 | 0.57 s | 0.001 | 0 ms |
-| Detalhe `/nfts/nft-1` | desktop | 100 | 100 | 100 | 100 | 0.57 s | 0 | 0 ms |
+| Inicio `/` | mobile | 91 | 100 | 100 | 100 | 2.84 s | 0 | 238 ms |
+| Detalhe `/nfts/nft-1` | mobile | 94 | 100 | 100 | 100 | 2.65 s | 0 | 177 ms |
+| Inicio `/` | desktop | 100 | 100 | 100 | 100 | 0.78 s | 0 | 4 ms |
+| Detalhe `/nfts/nft-1` | desktop | 100 | 100 | 100 | 100 | 0.68 s | 0 | 1 ms |
 
-Todas as medianas atingem as metas. Nova execução em 2026-10-21 (3 por combinação, 12 no total) sobre o build atual (com shadcn/ui parcial, 404, destaques e galeria). Dados em `summary.json`.
+Todas as medianas atingem as metas. Nova execução em 2026-10-28 (3 por combinação, 12 no total) sobre o build final, com o design baseado nos frames do Figma (imagens JPEG dos macacos, painel de filtros, rodapé completo, Criadores e Aprenda). Dados em `summary.json`. O Início mobile caiu de 98 para 91 e o LCP subiu de 2,12 s para 2,84 s: o hero e os cards agora carregam imagens JPEG de ~60 KB cada (antes eram SVG de poucos KB). Continua acima da meta (Perf >= 90), mas com pouca folga.
 
 ## Histórico
 A primeira rodada (antes das correções) deu SEO 83 e A11y 98: faltavam `<meta name="description">`, `public/robots.txt` (o preview devolvia o `index.html` para `/robots.txt`), landmark `<main>` e favicon. Foram corrigidos em `index.html`, `public/robots.txt` e `src/app.tsx`, sem simplificar a aplicação; a segunda rodada é a que vale e está nesta pasta (`summary.json`).
